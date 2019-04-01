@@ -8,13 +8,14 @@
 
 (do
   (do
+    (do (defonce pointLength 11))
     (defn note->hz [music-note]
       (midi->hz (note music-note)))
 
     (defn writeBuffer [buffer value-array] (let [va  (into [] (flatten value-array))]
                                              (buffer-write! buffer va) va))
 
-    (defn setChords [value-array note chordval point] (let [values          10
+    (defn setChords [value-array note chordval point] (let [values          11
                                                             chrd            (chord note chordval)
                                                             freqs           (vec (map  note->hz chrd))
                                                             maxChordLength  (min (count freqs) 4)
@@ -23,28 +24,28 @@
                                                             base-indices    (into [] (map + base-indices (repeat maxChordLength (+ 1 (* values point)))))]
                                                         (apply assoc value-array (interleave base-indices  freqs ))))
 
-     (defn setADSR [value-array a d s r point] (let [values          10
+     (defn setADSR [value-array a d s r point] (let [values          11
                                                      adsr            [a d s r]
                                                      base-indices    (range 4)
                                                      base-indices    (map + base-indices (repeat 4 (+ 5 (* values point))))]
                                                  (apply assoc value-array (interleave base-indices  adsr ))))
 
 
-     (defn setAmp [value-array amp point] (let [values          10 ]
+     (defn setAmp [value-array amp point] (let [values          11 ]
                                             (assoc value-array (+ 9 (* values point)) amp)))
 
 
-     (defn setAmp [value-array amp point] (let [values          10 ]
+     (defn setAmp [value-array amp point] (let [values          11 ]
                                             (assoc value-array (+ 9 (* values point)) amp)))
 
 
-     (defn makeBuffer [points ] (let [values      10
+     (defn makeBuffer [points ] (let [values      11
                                       buff        (buffer (* points values))
                                       value-array (into [] (repeat (* points values) 0 ))]
                                   (buffer-write! buff value-array)
                                   value-array))
 
-     (defn makeBarArray [] (let [values      10
+     (defn makeBarArray [] (let [values      11
                                   points      264
                                   p1h         (/ 265 2)
                                   value-array (into [] (repeat (* points values) 0 )) ]
@@ -141,14 +142,14 @@
 
 
   (do
-    (defonce mcbus1 (control-bus 10))
-    (defonce mcbus2 (control-bus 10))
-    (defonce mcbus3 (control-bus 10))
+    (defonce mcbus1 (control-bus 11))
+    (defonce mcbus2 (control-bus 11))
+    (defonce mcbus3 (control-bus 11))
     )
 
   (do
     (defonce buffer-64-1 (buffer 64))
-    (defonce buffer-64-2 (buffer 64 10))
+    (defonce buffer-64-2 (buffer 64 11))
     )
 
   (do (defonce cbus1 (control-bus 1)))
@@ -160,7 +161,7 @@
       )
 
 
-  (do (defonce pointLength 10))
+  (do (defonce pointLength 11))
   )
 
 
@@ -184,45 +185,94 @@
 (odoc scaled-play-buf)
 
 (odoc buffer-write!)
+(do
+  (def bpm 120)
+  (def bps (/ bpm 60))
 
-(def bpm 120)
-(def bps (* 2 36))
+  (def phrases 1)
+  (def bars-per-phrase 1)
+  (def beats-per-bar 4.0)
+  (def bar-duration (/ beats-per-bar bps))
+  (def beat-duration (/ bar-duration beats-per-bar))
+  (def half-beat-duration (/ beat-duration 2))
+  (def quarter-beat-duration (/ beat-duration 4))
+  (def eight-beat-duration (/ beat-duration 8))
+  (def sixteenth-beat-duration (/ beat-duration 16))
+  (def thirtysecond-beat-duration (/ beat-duration 32))
+  (def beat-rate (/ 1 thirtysecond-beat-duration))
 
-(def bars 1)
-(def beats-per-bar 8.0)
-(def beat-length (/ beats-per-bar bps))
-
-beat-length
-
-(def barArray (makeBarArray))
-
-(defn setBeat [bar-array ])
-
-
-(defonce rcnt-b (control-bus)) ;; global metronome count
+  (def ticks-per-bar (* beats-per-bar 32))
 
 
-(defsynth rnct [rate 0 out-bus 0 beats-per-bar 4 bpm 10] (let [bps   (/ bpm 60)
-                                                               pulse (impulse:kr bps)
-                                                        ;trg1   (trg1)
-                                                        stp2  (stepper:kr pulse)]  (out:kr out-bus (mod (pulse-count:kr pulse) beats-per-bar ))))
 
-(def rnct-s (rnct bps rcnt-b 4))
+
+
+  beat-rate
+  beat-length
+
+  (def barArray (makeBarArray))
+
+  (defn setBeat [bar-array ])
+
+
+  (defonce rcnt-b (control-bus)) ;; global metronome count
+
+
+  (defsynth rnct [rate 0 out-bus 0 beats-per-bar 4 bpm 10] (let [bps   (/ bpm 60)
+                                                                 pulse (impulse:kr bps)
+                                        ;trg1   (trg1)
+                                                                 stp2  (stepper:kr pulse)]  (out:kr out-bus (mod (pulse-count:kr pulse) beats-per-bar ))))
+
+  (def rnct-s (rnct (* 2 36) rcnt-b 4)))
 
 (control-bus-get rcnt-b)
 
-(kill rnct-s)
+
+
+
+(defn makeBar ([] (let [bpm 120
+                        bps (/ bpm 60)
+                        beats-per-bar 4
+                        bar-duration (/ beats-per-bar bps)
+                        beat-duration (/ bar-duration beats-per-bar)
+                        half-beat-duration (/ beat-duration 2)
+                        quarter-beat-duration (/ beat-duration 4)
+                        eight-beat-duration (/ beat-duration 8)
+                        sixteenth-beat-duration (/ beat-duration 16)
+                        thirtysecond-beat-duration (/ beat-duration 32)
+                        ticks-per-bar (* beats-per-bar 32)
+                        value-array (into [] (repeat (int ticks-per-bar) thirtysecond-beat-duration))
+                         ]
+                    value-array
+                    ))
+    )
+
+(def barb (makeBar))
+
+(partition 32 barb )
+
+(defn map-every-nth [f coll n]
+  (map-indexed #(if (zero? (mod (inc %1) n)) (f %2) %2) coll))
+
+
+
 
                                         ;single bar buffer, 4 beats, 8 senconds, 12 thirds, 16 fourths, 32 eights, 64 16ths, 128 32nds, 264 64ths
                                         ;[0 1 2 3]
                                         ;[[0 1 2 3] [0 1 2 3] [0 1 2 3] [0 1 2 3]]
-                                        ;
+                                        ;[0                   11                          22
+                                        ;  1        6           12           17             23
+                                        ;   2 3 4 5   7 8 9 20    13 14 15 16  18 19 20 21    24 25 26 27
                                         ;
 (def asas [[0 1 0 1] 0 [0 1 [0 1 1 1] 0] 1])
+
+(def base)
 
 asas
 (count asas)
                                         ;buffers
+
+(loop [x asas] (println x))
 
 
 (buffer-write! buffer-64-1 [ 4 4 4 4 4 4 4 4
@@ -236,7 +286,7 @@ asas
 
 
                                         ; single pulse point
-; p=[gate, f1, f2, f3, f4, a, d, s, r, amp]
+; p=[gate, f1, f2, f3, f4, a, d, s, r, amp, dur]
                                         ;Collection of points
 (do
   (def pointBuffer (buffer (* 5 pointLength)))
@@ -277,8 +327,11 @@ asas
                            2 0 0 0 0 0 0 0
                            4 0 0 0 0 0 0 0])
 
+(buffer-write! playBuffer barb)
+
 (def bbb (buffer 8))
-(buffer-write! bbb [1 0 1 1 0 1 1 0])
+(buffer-write! bbb [1 0 0 0 0 0 0 1])
+
                                         ;buffer modifiers
 
 (def modValArray (writeBuffer pointBuffer  (setChords modValArray :E#2 :minor 1)))
@@ -316,13 +369,14 @@ asas
 
 (def kickr (playReader :play-buf bbb :point-buf pointBuffer :in-bus-ctr b8th_beat-cnt-bus :outbus mcbus3))
 
-(ctl kickr :in-bus-ctr rcnt-b)
+(ctl kickr :in-bus-ctr b8th_beat-cnt-bus :play-buf bbb)
 
 
 (control-bus-get mcbus3)
 
 (kill kickr)
 
+(pp-node-tree)
                                         ;Kick
 (defsynth kick [freq 80
                 amp 1
@@ -383,7 +437,7 @@ asas
      :v1 0.01 :v2 0.01 :v3 0.01
      :d1 1 :d2 10 :d3 1
      :f1 50 :f2 5 :f3 40
-     :c1 -20 :c2 -18 :c3 -18 :bdur 0.1111)
+     :c1 -20 :c2 -18 :c3 -18 :bdur 0.11111)
 
 (ctl k1 :amp 1 :control-bus mcbus3 :video-control-bus vcbus3
      :v1 0.01 :v2 0.001 :v3 0.001
