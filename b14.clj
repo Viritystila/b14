@@ -207,8 +207,6 @@
 
 
 
-  beat-rate
-  beat-length
 
   (def barArray (makeBarArray))
 
@@ -227,29 +225,98 @@
 
 (control-bus-get rcnt-b)
 
-
+(odoc pulse-divider)
 
 
 (defn makeBar ([] (let [bpm 120
-                        bps (/ bpm 60)
-                        beats-per-bar 4
-                        bar-duration (/ beats-per-bar bps)
-                        beat-duration (/ bar-duration beats-per-bar)
-                        half-beat-duration (/ beat-duration 2)
-                        quarter-beat-duration (/ beat-duration 4)
-                        eight-beat-duration (/ beat-duration 8)
-                        sixteenth-beat-duration (/ beat-duration 16)
-                        thirtysecond-beat-duration (/ beat-duration 32)
-                        ticks-per-bar (* beats-per-bar 32)
-                        value-array (into [] (repeat (int ticks-per-bar) thirtysecond-beat-duration))
-                         ]
+                          bps (/ bpm 60)
+                          beats-per-bar 4
+                          min-note-dur 64
+                          double-note (/ (* 2 beats-per-bar) bps)
+                          whole-note (/ beats-per-bar bps)
+                          half-note (/ whole-note 2)
+                          quarter-note (/ whole-note 4)
+                          eight-note (/ whole-note  8)
+                          sixteenth-note (/ whole-note 16)
+                          thirtysecond-note (/ whole-note 32)
+                          sixtyfourth-note  (/ whole-note 64)
+                          ticks-per-bar (* beats-per-bar min-note-dur)
+                          value-array (into [] (repeat (int ticks-per-bar) 0))
+                          ]
                     value-array
                     ))
     )
 
 (def barb (makeBar))
 
-(partition 32 barb )
+(nth (partition 64 barb ) 0)
+
+(apply assoc barb (interleave [0 1 2 3]  [1 2 3 4] ))
+
+barb
+
+(count barb)
+
+(defn make-trigger-buffer [[:as v] ] (let [
+                                           length       (count v)
+                                           note-dur     (/ duration length)
+                                           into]))
+
+(odoc demand)
+(odoc t-duty)
+(odoc dbufrd)
+(odoc ringz)
+(odoc dseries)
+(odoc buff)
+
+
+(def cb1 (control-bus))
+
+(def cb2 (control-bus))
+
+(def vvvv [1.0 0.5 0.25 0.5])
+
+(vec  (buffer-data bub))
+
+(defsynth tst [trig-in 0 counter-in 0 dur-buffer-in 0 out-bus 0 cntrl-bus 0 b 0] (let [trg-in       (in:kr trig-in)
+                                                                                        cntr-in      (in:kr counter-in)
+                                        ;trg (demand:kr (in:kr trg-in) 0 (dbufrd dur-buffer-in cntr-in) )
+                                                                                        trg (t-duty:kr (dbufrd dur-buffer-in (dseries 0 1 INF) 1))
+                                                                                        env (env-gen (perc 0.01 0.1 1 0) :gate trg)
+                                                                                        ] (out:kr out-bus trg)
+                                                                                  (out 0 (* 10 env (sin-osc (* 1 100  ))))))
+
+(odoc List)
+(def bub (buffer 8))
+(set-buffer bub [1] )
+
+(defn set-buffer [buf new-buf-data] (let [size (count (vec (buffer-data buf)))
+                                        clear-buf-data (into [] (repeat size 0))]
+                                      (buffer-write! buf clear-buf-data)
+                                      (buffer-write! buf new-buf-data)
+                                        ))
+
+
+(def ttt (tst b8th_beat-trg-bus b8th_beat-cnt-bus bub cb1 0))
+
+(ctl ttt :b 0)
+
+(control-bus-get cb1)
+
+(control-bus-set! cb2 3)
+
+(pp-node-tree)
+
+
+(kill ttt)
+
+(kill 148)
+
+(num-frames)
+
+(odoc t-duty)
+
+(odoc buffer-data)
 
 (defn map-every-nth [f coll n]
   (map-indexed #(if (zero? (mod (inc %1) n)) (f %2) %2) coll))
