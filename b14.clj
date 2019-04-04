@@ -228,39 +228,18 @@
 (odoc pulse-divider)
 
 
-(defn makeBar ([] (let [bpm 120
-                          bps (/ bpm 60)
-                          beats-per-bar 4
-                          min-note-dur 64
-                          double-note (/ (* 2 beats-per-bar) bps)
-                          whole-note (/ beats-per-bar bps)
-                          half-note (/ whole-note 2)
-                          quarter-note (/ whole-note 4)
-                          eight-note (/ whole-note  8)
-                          sixteenth-note (/ whole-note 16)
-                          thirtysecond-note (/ whole-note 32)
-                          sixtyfourth-note  (/ whole-note 64)
-                          ticks-per-bar (* beats-per-bar min-note-dur)
-                          value-array (into [] (repeat (int ticks-per-bar) 0))
-                          ]
-                    value-array
-                    ))
-    )
+(defn makeBar ([] (let [whole-note 1
+                        half-note (/ whole-note 2)
+                        quarter-note (/ whole-note 4)
+                        eight-note (/ whole-note  8)
+                        sixteenth-note (/ whole-note 16)
+                        thirtysecond-note (/ whole-note 32)
+                        sixtyfourth-note  (/ whole-note 64)
+                        value-array (into [] (repeat (int ticks-per-bar) 0))]
+                        value-array  )))
 
 (def barb (makeBar))
 
-(nth (partition 64 barb ) 0)
-
-(apply assoc barb (interleave [0 1 2 3]  [1 2 3 4] ))
-
-barb
-
-(count barb)
-
-(defn make-trigger-buffer [[:as v] ] (let [
-                                           length       (count v)
-                                           note-dur     (/ duration length)
-                                           into]))
 
 (odoc demand)
 (odoc t-duty)
@@ -274,7 +253,7 @@ barb
 
 (def cb2 (control-bus))
 
-(def vvvv [1.0 0.5 0.25 0.5])
+(def vvvv [1.0 0.5 0.25 0.5 1/4 1/5])
 
 (vec  (buffer-data bub))
 
@@ -284,17 +263,47 @@ barb
                                                                                         trg (t-duty:kr (dbufrd dur-buffer-in (dseries 0 1 INF) 1))
                                                                                         env (env-gen (perc 0.01 0.1 1 0) :gate trg)
                                                                                         ] (out:kr out-bus trg)
-                                                                                  (out 0 (* 10 env (sin-osc (* 1 100  ))))))
+                                                                                  (out 0 (* 1 env (sin-osc (* 1 100  ))))))
 
 (odoc List)
 (def bub (buffer 8))
-(set-buffer bub [1] )
+(set-buffer bub [1/4 0.25 1/4 0.5 1/4] )
 
 (defn set-buffer [buf new-buf-data] (let [size (count (vec (buffer-data buf)))
                                         clear-buf-data (into [] (repeat size 0))]
                                       (buffer-write! buf clear-buf-data)
                                       (buffer-write! buf new-buf-data)
                                         ))
+
+(defn beat ([[:as beat-array]] (let [ba           beat-array
+                                     duration     1
+                                     basecount    (count ba)
+                                     baseduration (/ duration basecount)]
+                                     (into [] (repeat basecount baseduration)))))
+
+
+(doseq [x [1 2 3]] ())
+
+(defn traverseVector [input-array] (let [xv  input-array]
+                                     (doseq [x xv] (do (if (vector? x) (traverseVector x) (println x))))))
+
+
+(defn traverseVector2 [input-array] (let [xv input-array] (loop [result []])))
+
+;(do (if (vector? x) (traverseVector x) (println x))))) )))
+
+(def ddf (traverseVector [5 5 5]))
+
+
+
+(flatten [5 [3 4]  66 55])
+
+ddf
+
+
+(beat [[1 1] 1 ])
+
+(set-buffer bub (beat [1 1]))
 
 
 (def ttt (tst b8th_beat-trg-bus b8th_beat-cnt-bus bub cb1 0))
@@ -313,6 +322,17 @@ barb
 (kill 148)
 
 (num-frames)
+
+
+
+(defn aaa [sas] (let [xxx sas]
+                  (loop [xs (seq [1 2 3 4 5])
+                         result []]
+                    (if xs
+                      (let [x (first xs)]
+                        (recur (next xs) (conj result (* x x))))
+                      result))))
+
 
 (odoc t-duty)
 
