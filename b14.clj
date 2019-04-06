@@ -288,23 +288,43 @@
                                      (doseq [x xv] (do (if (vector? x) (traverseVector x) (println x))))))
 
 
-(defn traverseVector2 [input-array] (let [xv input-array] (loop [result []])))
+(defn traverseVector2 ([input-array] (let [input-vec input-array
+                                           ;_ (println input-vec)
+                                           result []]
+                                          (if true ;(vector? input-vec)
+                                            (loop [xv (seq input-vec)
+                                                   result []]
+                                              (if xv
+                                                (let [_ (println xv)
+                                                      length (count input-vec)
+                                                      x (first xv)]
+                                                  (if (vector? x) (recur (next xv) (conj result (traverseVector2 x length)))
+                                                      (recur (next xv) (conj result (/ x length 1))))) result)))))
+  ([input-array bl] (let [input-vec input-array
+                          _ (println bl)
+                          ]
+                                          (if (vector? input-vec)
+                                            (loop [xv (seq input-vec)
+                                                   result []]
+                                              (if xv
+                                                (let [length (count input-vec)
+                                                      x (first xv)]
+                                                  (if (vector? x) (recur (next xv) (conj result (traverseVector2 x (* bl length))))
+                                                      (recur (next xv) (conj result (/ x length bl))))) result)))))
+)
 
-;(do (if (vector? x) (traverseVector x) (println x))))) )))
 
-(def ddf (traverseVector [5 5 5]))
+(defn generateDurations [input] (let [durs  (traverseVector2 input)] (flatten durs)) )
 
+(traverseVector2 [1 [1 [1 [1 [1 [1 1]]]]]])
 
+(set-buffer bub (generateDurations [1 1 [1 1 1 1 1 1]]))
 
-(flatten [5 [3 4]  66 55])
+(seq [1 [1 [1 1] 1] 1])
 
-ddf
+(/ 1 2 3)
 
-
-(beat [[1 1] 1 ])
-
-(set-buffer bub (beat [1 1]))
-
+(buffer-free bub )
 
 (def ttt (tst b8th_beat-trg-bus b8th_beat-cnt-bus bub cb1 0))
 
@@ -329,7 +349,8 @@ ddf
                   (loop [xs (seq [1 2 3 4 5])
                          result []]
                     (if xs
-                      (let [x (first xs)]
+                      (let [x (first xs)
+                            ss (count x)]
                         (recur (next xs) (conj result (* x x))))
                       result))))
 
