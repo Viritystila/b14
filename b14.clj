@@ -238,36 +238,21 @@
                         value-array (into [] (repeat (int ticks-per-bar) 0))]
                         value-array  )))
 
-(def barb (makeBar))
-
-
-(odoc demand)
-(odoc t-duty)
-(odoc dbufrd)
-(odoc ringz)
-(odoc dseries)
-(odoc buff)
-
-
 (def cb1 (control-bus))
 
 (def cb2 (control-bus))
 
-(def vvvv [1.0 0.5 0.25 0.5 1/4 1/5])
-
-(vec  (buffer-data bub))
 
 (defsynth tst [trig-in 0 counter-in 0 dur-buffer-in 0 out-bus 0 cntrl-bus 0 b 0] (let [trg-in       (in:kr trig-in)
                                                                                         cntr-in      (in:kr counter-in)
                                         ;trg (demand:kr (in:kr trg-in) 0 (dbufrd dur-buffer-in cntr-in) )
                                                                                         trg (t-duty:kr (dbufrd dur-buffer-in (dseries 0 1 INF) 1))
-                                                                                        env (env-gen (perc 0.01 0.1 1 0) :gate trg)
+                                                                                        env (env-gen (perc 0.01 0.01 1 0) :gate trg)
                                                                                         ] (out:kr out-bus trg)
                                                                                   (out 0 (* 1 env (sin-osc (* 1 100  ))))))
 
-(odoc List)
+
 (def bub (buffer 8))
-(set-buffer bub [1/4 0.25 1/4 0.5 1/4] )
 
 (defn set-buffer [buf new-buf-data] (let [size (count (vec (buffer-data buf)))
                                         clear-buf-data (into [] (repeat size 0))]
@@ -275,20 +260,12 @@
                                       (buffer-write! buf new-buf-data)
                                         ))
 
-(defn beat ([[:as beat-array]] (let [ba           beat-array
-                                     duration     1
-                                     basecount    (count ba)
-                                     baseduration (/ duration basecount)]
-                                     (into [] (repeat basecount baseduration)))))
+
+(defn triggerDur [dur] (if (= dur 0) 0 1) )
 
 
-(doseq [x [1 2 3]] ())
 
-(defn traverseVector [input-array] (let [xv  input-array]
-                                     (doseq [x xv] (do (if (vector? x) (traverseVector x) (println x))))))
-
-
-(defn traverseVector2 ([input-array] (let [input-vec input-array
+(defn traverseVector ([input-array] (let [input-vec input-array
                                            ;_ (println input-vec)
                                            result []]
                                           (if true ;(vector? input-vec)
@@ -298,8 +275,8 @@
                                                 (let [_ (println xv)
                                                       length (count input-vec)
                                                       x (first xv)]
-                                                  (if (vector? x) (recur (next xv) (conj result (traverseVector2 x length)))
-                                                      (recur (next xv) (conj result (/ x length 1))))) result)))))
+                                                  (if (vector? x) (recur (next xv) (conj result (traverseVector x length)))
+                                                      (recur (next xv) (conj result (/ (triggerDur x) length 1))))) result)))))
   ([input-array bl] (let [input-vec input-array
                           _ (println bl)
                           ]
@@ -309,22 +286,49 @@
                                               (if xv
                                                 (let [length (count input-vec)
                                                       x (first xv)]
-                                                  (if (vector? x) (recur (next xv) (conj result (traverseVector2 x (* bl length))))
-                                                      (recur (next xv) (conj result (/ x length bl))))) result)))))
+                                                  (if (vector? x) (recur (next xv) (conj result (traverseVector x (* bl length))))
+                                                      (recur (next xv) (conj result (/ (triggerDur x) length bl))))) result)))))
 )
 
+(defn countZeros [input-vector] (loop [xv (seq input-vector)
+                                       sum 1]
+                                  (if xv
+                                    (let [x (first xv)]
+                                      ;(println x)
+                                      (if (= x 0) (do (println x) (recur (next xv) (+ 1 sum))) sum)) sum)))
 
-(defn generateDurations [input] (let [durs  (traverseVector2 input)] (flatten durs)) )
+(countZeros [0 0 1 0])
 
-(traverseVector2 [1 [1 [1 [1 [1 [1 1]]]]]])
 
-(set-buffer bub (generateDurations [1 1 [1 1 1 1 1 1]]))
+(defn adjustDuration [input-vector] (let [length   (count input-vector)
+                                          idxs (range length)]
+                                      (loop [xv (seq idxs)
+                                             result []]
+                                        (if xv
+                                          (let [xidx    (first xv)
+                                                nidx    (mod (+ 1 xidx) length)
+                                                opnext  (nth input-vector nidx)
+                                                op      (nth input-vector xidx)
+                                                _  (println (subvec input-vector nidx))
+                                                ;_ (println (countZeros (subvec input-vector nidx)))
+                                                op      (if (= 0 opnext) (* op (countZeros (subvec input-vector nidx))) op)]
+                                                (recur (next xv) (conj result op))) result))))
 
-(seq [1 [1 [1 1] 1] 1])
+(adjustDuration [1 0 0 0 1 0])
 
-(/ 1 2 3)
+(defn generateDurations [input] (let [durs  (traverseVector input)
+                                      durs  (into [] (flatten durs))
+                                      durs  (adjustDuration durs)]durs) )
 
-(buffer-free bub )
+(traverseVector [1 2 0 4])
+
+(doseq [x [ 1 2 3]] (println x))
+
+(range 10)
+(set-buffer bub (generateDurations [1 0 1 0 1 0 0 1]))
+
+
+(subvec [1 2 3] (mod 3 3))
 
 (def ttt (tst b8th_beat-trg-bus b8th_beat-cnt-bus bub cb1 0))
 
@@ -341,29 +345,8 @@
 
 (kill 148)
 
-(num-frames)
 
-
-
-(defn aaa [sas] (let [xxx sas]
-                  (loop [xs (seq [1 2 3 4 5])
-                         result []]
-                    (if xs
-                      (let [x (first xs)
-                            ss (count x)]
-                        (recur (next xs) (conj result (* x x))))
-                      result))))
-
-
-(odoc t-duty)
-
-(odoc buffer-data)
-
-(defn map-every-nth [f coll n]
-  (map-indexed #(if (zero? (mod (inc %1) n)) (f %2) %2) coll))
-
-
-
+(subvec [1 2 3] 4)
 
                                         ;single bar buffer, 4 beats, 8 senconds, 12 thirds, 16 fourths, 32 eights, 64 16ths, 128 32nds, 264 64ths
                                         ;[0 1 2 3]
