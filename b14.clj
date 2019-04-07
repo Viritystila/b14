@@ -295,7 +295,7 @@
                                   (if xv
                                     (let [x (first xv)]
                                       ;(println x)
-                                      (if (= x 0) (do (println x) (recur (next xv) (+ 1 sum))) sum)) sum)))
+                                      (if (= x 0) (do (recur (next xv) (+ 1 sum))) sum)) sum)))
 
 (countZeros [0 0 1 0])
 
@@ -309,7 +309,7 @@
                                                 nidx    (mod (+ 1 xidx) length)
                                                 opnext  (nth input-vector nidx)
                                                 op      (nth input-vector xidx)
-                                                _  (println (subvec input-vector nidx))
+                                                ;_  (println (subvec input-vector nidx))
                                                 ;_ (println (countZeros (subvec input-vector nidx)))
                                                 op      (if (= 0 opnext) (* op (countZeros (subvec input-vector nidx))) op)]
                                                 (recur (next xv) (conj result op))) result))))
@@ -318,7 +318,9 @@
 
 (defn generateDurations [input] (let [durs  (traverseVector input)
                                       durs  (into [] (flatten durs))
-                                      durs  (adjustDuration durs)]durs) )
+                                      durs  (adjustDuration durs)]
+                                  ;(println durs)
+                                  durs) )
 
 (traverseVector [1 2 0 4])
 
