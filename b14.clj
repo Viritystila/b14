@@ -179,114 +179,91 @@
                                                                                   (out 0 (* 1 env (sin-osc (* 1 200  ))))))
 
 
-(def bub (buffer 8))
-
-(defn set-buffer [buf new-buf-data] (let [size (count (vec (buffer-data buf)))
-                                        clear-buf-data (into [] (repeat size 0))]
-                                      (buffer-write! buf clear-buf-data)
-                                      (buffer-write! buf new-buf-data)
+                                        ;Clojure patterning functions
+(do
+  (defn set-buffer [buf new-buf-data] (let [size (count (vec (buffer-data buf)))
+                                            clear-buf-data (into [] (repeat size 0))]
+                                        (buffer-write! buf clear-buf-data)
+                                        (buffer-write! buf new-buf-data)
                                         ))
 
 
-(defn triggerDur [dur] (if (= dur 0) 0 1) )
+  (defn triggerDur [dur] (if (= dur 0) 0 1) )
 
 
 
-(defn traverseVector ([input-array] (let [input-vec input-array
-                                           ;_ (println input-vec)
-                                           result []]
-                                          (if true ;(vector? input-vec)
-                                            (loop [xv (seq input-vec)
-                                                   result []]
-                                              (if xv
-                                                (let [;_ (println xv)
-                                                      length (count input-vec)
-                                                      x (first xv)]
-                                                  (if (vector? x) (recur (next xv) (conj result (traverseVector x length)))
-                                                      (recur (next xv) (conj result (/ 1 length 1))))) result)))))
-  ([input-array bl] (let [input-vec input-array
-                          ;_ (println bl)
-                          ]
-                                          (if (vector? input-vec)
-                                            (loop [xv (seq input-vec)
-                                                   result []]
-                                              (if xv
-                                                (let [length (count input-vec)
-                                                      x (first xv)]
-                                                  (if (vector? x) (recur (next xv) (conj result (traverseVector x (* bl length))))
-                                                      (recur (next xv) (conj result (/ 1 length bl))))) result))))))
+  (defn traverseVector ([input-array] (let [input-vec input-array
+                                        ;_ (println input-vec)
+                                            result []]
+                                        (if true ;(vector? input-vec)
+                                          (loop [xv (seq input-vec)
+                                                 result []]
+                                            (if xv
+                                              (let [;_ (println xv)
+                                                    length (count input-vec)
+                                                    x (first xv)]
+                                                (if (vector? x) (recur (next xv) (conj result (traverseVector x length)))
+                                                    (recur (next xv) (conj result (/ 1 length 1))))) result)))))
+    ([input-array bl] (let [input-vec input-array
+                                        ;_ (println bl)
+                            ]
+                        (if (vector? input-vec)
+                          (loop [xv (seq input-vec)
+                                 result []]
+                            (if xv
+                              (let [length (count input-vec)
+                                    x (first xv)]
+                                (if (vector? x) (recur (next xv) (conj result (traverseVector x (* bl length))))
+                                    (recur (next xv) (conj result (/ 1 length bl))))) result))))))
 
 
-(defn countZeros [input-vector] (loop [xv (seq input-vector)
-                                       sum 0]
-                                  (if xv
-                                    (let [x (first xv)]
-                                      ;(println x)
-                                      (if (= x 0) (do (recur (next xv) (+ 1 sum))) sum)) sum)))
-
-(countZeros [0 0 1 0])
-
-(defn sumZeroDurs [idxs input-vector full-durs] (loop [xv (seq idxs)
-                                                  sum 0]
-                                             (if xv
-                                               (let [x       (first xv)
-                                                     zero-x  (nth input-vector x )
-                                                     dur-x   (nth full-durs x)]
-                                                 (println zero-x)
-                                                 (println dur-x)
-                                                 (if (= zero-x 0) (do (recur (next xv) (+ dur-x sum))) sum)) sum)))
+  (defn sumZeroDurs [idxs input-vector full-durs] (loop [xv (seq idxs)
+                                                         sum 0]
+                                                    (if xv
+                                                      (let [x       (first xv)
+                                                            zero-x  (nth input-vector x )
+                                                            dur-x   (nth full-durs x)]
+                                                        (println zero-x)
+                                                        (println dur-x)
+                                                        (if (= zero-x 0) (do (recur (next xv) (+ dur-x sum))) sum)) sum)))
 
 
-(defn adjustDuration [input-vector input-original] (let [length   (count input-vector)
-                                                         full-durs input-vector
-                                                         ;_ (println full-durs)
-                                                         input-vector (into [] (map * input-vector input-original))
-                                                         idxs (vec (range length))]
-                                                     (loop [xv (seq idxs)
-                                                            result []]
-                                                       (if xv
-                                                         (let [xidx      (first xv)
-                                                               nidx      (mod (+ 1 xidx) length)
-                                                               opnext    (nth input-vector nidx)
-                                                               op        (nth input-vector xidx)
-                                                               vec-ring  (flatten (conj (subvec idxs nidx) (subvec idxs 0 nidx )))
+  (defn adjustDuration [input-vector input-original] (let [length   (count input-vector)
+                                                           full-durs input-vector
+                                        ;_ (println full-durs)
+                                                           input-vector (into [] (map * input-vector input-original))
+                                                           idxs (vec (range length))]
+                                                       (loop [xv (seq idxs)
+                                                              result []]
+                                                         (if xv
+                                                           (let [xidx      (first xv)
+                                                                 nidx      (mod (+ 1 xidx) length)
+                                                                 opnext    (nth input-vector nidx)
+                                                                 op        (nth input-vector xidx)
+                                                                 vec-ring  (flatten (conj (subvec idxs nidx) (subvec idxs 0 nidx )))
                                         ;_  (println (subvec input-vector nidx))
-                                                ;_ (println (countZeros (subvec input-vector nidx)))
-                                                               op      (if (and (not= 0 op) ( = 0 opnext)) (+ op (sumZeroDurs vec-ring input-vector full-durs)) op)]
-                                                           (recur (next xv) (conj result op))) result))))
+                                        ;_ (println (countZeros (subvec input-vector nidx)))
+                                                                 op      (if (and (not= 0 op) ( = 0 opnext)) (+ op (sumZeroDurs vec-ring input-vector full-durs)) op)]
+                                                             (recur (next xv) (conj result op))) result))))
 
-(adjustDuration [0 1 0 0 1 0])
+  (defn generateDurations [input] (let [mod-input (vec (map triggerDur (vec (flatten input))))
+                                        durs  (traverseVector input)
+                                        durs  (into [] (flatten durs))
+                                        durs  (adjustDuration durs (vec (flatten mod-input)))]
+                                        ;(println durs)
+                                    durs) )
 
-(defn generateDurations [input] (let [durs  (traverseVector input)
-                                      durs  (into [] (flatten durs))
-                                      durs  (adjustDuration durs (vec (flatten input)))]
-                                  ;(println durs)
-                                  durs) )
-
-(nth [1 2 3] 1)
-(map * [1 2] [ 3 3])
-
-(generateDurations [1 1[1 0 1 1] 0 1])
-
-(reduce + (generateDurations [1 1 [1 0  1 1 ] 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]))
-
-
-(+ 1/4 1/8)
-(- 1 (+ 1/4 1/2 1/8 1/4 ))
-
-(- 1 (+ 1/4 1/4 1/8 1/4)) ;1/8
-(- 1 (+ 1/2 1/8 1/16 1/8)) ;3/16
-
-(defn set-buffer2 [synth-in buf new-buf-data] (let [size         (count new-buf-data)
-                                                 new-buf      (buffer size) ]
-                                             (buffer-write-relay! new-buf new-buf-data)
-                                             (ctl synth-in :dur-buffer-in new-buf)
-                                             (buffer-free buf)
-                                             new-buf
-                                        ))
+  (defn set-buffer2 [synth-in buf new-buf-data] (let [size         (count new-buf-data)
+                                                      new-buf      (buffer size) ]
+                                                  (buffer-write-relay! new-buf new-buf-data)
+                                                  (ctl synth-in :dur-buffer-in new-buf)
+                                                  (buffer-free buf)
+                                                  new-buf
+                                                  )))
 
 
-(def bub (set-buffer2 ttt bub (generateDurations [1 1 1 1])))
+
+(def bub (set-buffer2 ttt bub (generateDurations [1 1 1 (vec (repeat 8 3))])))
 
 (repeat 10 1)
 
