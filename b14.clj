@@ -133,7 +133,7 @@
     (def b16th-cnt (b16th_beat-cnt [:after b16th-trg]))
     (def b32th-trg (b32th_beat-trg [:after r-trg]))
     (def b32th-cnt (b32th_beat-cnt [:after b32th-trg]))
-    (control-bus-set! master-rate-bus (* 2 36))
+    (control-bus-set! master-rate-bus (* 1 1))
     )
   (do
     (defonce main-g (group "main bus"))
@@ -169,18 +169,45 @@
 
 (def cb2 (control-bus))
 
-
-(defsynth tst [trig-in 0 counter-in 0 dur-buffer-in 0 out-bus 0 cntrl-bus 0 b 0] (let [trg-in       (in:kr trig-in)
-                                                                                        cntr-in      (in:kr counter-in)
+(defsynth tst [trig-in 0 counter-in 0 dur-buffer-in 0 out-bus 0 cntrl-bus 0 b 4] (let [trg-in       (in:kr trig-in)
+                                                                                         ;   cntr-in      (in:kr counter-in)
                                         ;trg (demand:kr (in:kr trg-in) 0 (dbufrd dur-buffer-in cntr-in) )
-                                                                                        trg (t-duty:kr (dbufrd dur-buffer-in (dseries 0 1 INF) 1))
-                                                                                        env (env-gen (perc 0.01 0.01 1 0) :gate trg)
-                                                                                        ] (out:kr out-bus trg)
+                                                                                            trg (t-duty:kr (dbufrd 175 (dseries 0 1 b) 0) trg-in)
+                                                                                            env (env-gen (perc 0.01 0.01 1 0) :gate trg)
+                                                                                            ] (out:kr out-bus trg)
                                                                                   (out 0 (* 1 env (sin-osc (* 1 200  ))))))
 
+(def bbbb (buffer 3))
 
-                                        ;Clojure patterning functions
+
+
+(index (buffer-id bbbb) 30)
+
+(odoc index)
+
+(odoc t-duty)
+
+(odoc dbufrd)
+
+(odoc dseries)
+
+(odoc buffer-data)
+
+                                        ;Clojure patterning functions and trigger synths
 (do
+  (do
+    (defsynth baseTrigger [dur 1 out-bus 0] (out:kr out-bus (impulse:kr (in:kr dur))))
+    (def base-trigger-bus (control-bus 1))
+    (def base-trigger-dur-bus (control-bus 1))
+    (control-bus-set! base-trigger-dur-bus 1)
+    (def base-trigger (baseTrigger base-trigger-dur-bus base-trigger-bus))
+
+    (def base-trigger-count-bus (control-bus 1))
+    (defsynth baseTriggerCounter [base-trigger-bus-in 0 base-trigger-count-bus-out 0]
+      (out:kr base-trigger-count-bus-out (pulse-count:kr (in:kr base-trigger-bus-in))))
+    (def base-trigger-count (baseTriggerCounter base-trigger-bus base-trigger-count-bus)))
+
+
   (defn set-buffer [buf new-buf-data] (let [size (count (vec (buffer-data buf)))
                                             clear-buf-data (into [] (repeat size 0))]
                                         (buffer-write! buf clear-buf-data)
@@ -253,25 +280,56 @@
                                         ;(println durs)
                                     durs) )
 
-  (defn set-buffer2 [synth-in buf new-buf-data] (let [size         (count new-buf-data)
+  (defn set-buffer [synth-in buf new-buf-data] (let [size         (count new-buf-data)
                                                       new-buf      (buffer size) ]
                                                   (buffer-write-relay! new-buf new-buf-data)
                                                   (ctl synth-in :dur-buffer-in new-buf)
                                                   (buffer-free buf)
                                                   new-buf
-                                                  )))
+                                                  ))
+
+  (defn set-buffer2 [synth-in buf & new-buf-data] (let [;new-buf-data (vec (concat new-buf-data))
+                                                        new-buf-data (vec (flatten (vec new-buf-data)))
+                                                        size         (count new-buf-data)
+                                                      new-buf      (buffer size) ]
+                                                  (buffer-write-relay! new-buf new-buf-data)
+                                                  (ctl synth-in :dur-buffer-in new-buf)
+                                                  (buffer-free buf)
+                                                  new-buf
+                                                  ))
 
 
 
-(def bub (set-buffer2 ttt bub (generateDurations [1 1 1 (vec (repeat 8 3))])))
+
+
+
+  (event-monitor-off)
+
+
+  (reduce + (generateDurations [1 1 1 [1 1 1 1]])))
+
+
+(def bub (set-buffer2 ttt bub (generateDurations [[1 1] 1 1 1]) ))
+
+(buffer-id bub)
 
 (repeat 10 1)
 
-(subvec [1 2 3] (mod 3 3))
+(concat [1 2 3] [1 2 3] [1 2 3])
 
-(def ttt (tst b8th_beat-trg-bus b8th_beat-cnt-bus bub cb1 0))
 
-(ctl ttt :b 0)
+(do
+  (kill ttt)
+  (def ttt (tst base-trigger-bus b32th_beat-cnt-bus bub cb1 0))
+
+  )
+
+(= overtone.sc.synth.Synth (type tst))
+
+(buffer-id bub)
+
+
+(ctl ttt :b 4)
 
 (control-bus-get cb1)
 
@@ -279,10 +337,11 @@
 
 (pp-node-tree)
 
+(kill 73)
 
 (kill ttt)
 
-(kill 148)
+(kill ttt2)
 
 
 (subvec [1 2 3] 4)
@@ -292,6 +351,8 @@
 (def tss (ts))
 
 (kill tss)
+
+(odoc buf-rd)
 
 (buffer-write! buffer-64-1 [ 4 4 4 4 4 4 4 4
                              4 4 4 4 4 4 4 4
