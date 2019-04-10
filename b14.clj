@@ -1,212 +1,29 @@
 (ns b14 (:use [overtone.live]) (:require [viritystone.tone :as t]) )
 
-;(defsynth aaa []  (out 0 (sin-osc 100)))
-
-;(def aa (aaa))
-
-;(kill aa)
-
-(do
-  (do
-    (do (defonce pointLength 11))
-    (defn note->hz [music-note]
-      (midi->hz (note music-note)))
-
-    (defn writeBuffer [buffer value-array] (let [va  (into [] (flatten value-array))]
-                                             (buffer-write! buffer va) va))
-
-    (defn setChords [value-array note chordval point] (let [values          11
-                                                            chrd            (chord note chordval)
-                                                            freqs           (vec (map  note->hz chrd))
-                                                            maxChordLength  (min (count freqs) 4)
-                                                            freqs           (into [] (subvec freqs 0 maxChordLength))
-                                                            base-indices    (range (count freqs))
-                                                            base-indices    (into [] (map + base-indices (repeat maxChordLength (+ 1 (* values point)))))]
-                                                        (apply assoc value-array (interleave base-indices  freqs ))))
-
-     (defn setADSR [value-array a d s r point] (let [values          11
-                                                     adsr            [a d s r]
-                                                     base-indices    (range 4)
-                                                     base-indices    (map + base-indices (repeat 4 (+ 5 (* values point))))]
-                                                 (apply assoc value-array (interleave base-indices  adsr ))))
-
-
-     (defn setAmp [value-array amp point] (let [values          11 ]
-                                            (assoc value-array (+ 9 (* values point)) amp)))
-
-
-     (defn setAmp [value-array amp point] (let [values          11 ]
-                                            (assoc value-array (+ 9 (* values point)) amp)))
-
-
-     (defn makeBuffer [points ] (let [values      11
-                                      buff        (buffer (* points values))
-                                      value-array (into [] (repeat (* points values) 0 ))]
-                                  (buffer-write! buff value-array)
-                                  value-array))
-
-     (defn makeBarArray [] (let [values      11
-                                  points      264
-                                  p1h         (/ 265 2)
-                                  value-array (into [] (repeat (* points values) 0 )) ]
-                               value-array))
-
-
-    )
-
-    (do
-    (defonce master-rate-bus (control-bus))
-    (defonce root-trg-bus (control-bus)) ;; global metronome pulse
-    (defonce root-cnt-bus (control-bus)) ;; global metronome count
-
-    (defonce b1st_beat-trg-bus (control-bus)) ;; beat pulse (fraction of root)
-    (defonce b1st_beat-cnt-bus (control-bus)) ;; beat count
-
-    (defonce b4th_beat-trg-bus (control-bus)) ;; beat pulse (fraction of root)
-    (defonce b4th_beat-cnt-bus (control-bus)) ;; beat count
-
-    (defonce b8th_beat-trg-bus (control-bus)) ;; beat pulse (fraction of root)
-    (defonce b8th_beat-cnt-bus (control-bus)) ;; beat count
-
-    (defonce b16th_beat-trg-bus (control-bus)) ;; beat pulse (fraction of root)
-    (defonce b16th_beat-cnt-bus (control-bus)) ;; beat count
-
-    (defonce b32th_beat-trg-bus (control-bus)) ;; beat pulse (fraction of root)
-    (defonce b32th_beat-cnt-bus (control-bus)) ;; beat count
-
-    (def FRACTION_1 "Number of global pulses per beat" 1)
-    (def FRACTION_4 "Number of global pulses per beat" 4)
-    (def FRACTION_8 "Number of global pulses per beat" 8)
-    (def FRACTION_16 "Number of global pulses per beat" 16)
-    (def FRACTION_32 "Number of global pulses per beat" 32)
-
-    )
-
-  (do
-    (defsynth root-trg [rate 100]
-      (out:kr root-trg-bus (impulse:kr (in:kr rate))))
-
-    (defsynth root-cnt []
-      (out:kr root-cnt-bus (pulse-count:kr (in:kr root-trg-bus))))
-
-    (defsynth b1st_beat-trg [div FRACTION_1]
-      (out:kr b1st_beat-trg-bus (pulse-divider (in:kr root-trg-bus) div)))
-
-    (defsynth b1st_beat-cnt []
-      (out:kr b1st_beat-cnt-bus (pulse-count (in:kr b1st_beat-trg-bus))))
-
-    (defsynth b4th_beat-trg [div FRACTION_4]
-      (out:kr b4th_beat-trg-bus (pulse-divider (in:kr root-trg-bus) div)))
-
-    (defsynth b4th_beat-cnt []
-      (out:kr b4th_beat-cnt-bus (pulse-count (in:kr b4th_beat-trg-bus))))
-
-    (defsynth b8th_beat-trg [div FRACTION_8]
-      (out:kr b8th_beat-trg-bus (pulse-divider (in:kr root-trg-bus) div)))
-
-    (defsynth b8th_beat-cnt []
-      (out:kr b8th_beat-cnt-bus (pulse-count (in:kr b8th_beat-trg-bus))))
-
-    (defsynth b16th_beat-trg [div FRACTION_16]
-      (out:kr b16th_beat-trg-bus (pulse-divider (in:kr root-trg-bus) div)))
-
-    (defsynth b16th_beat-cnt []
-      (out:kr b16th_beat-cnt-bus (pulse-count (in:kr b16th_beat-trg-bus))))
-
-    (defsynth b32th_beat-trg [div FRACTION_32]
-      (out:kr b32th_beat-trg-bus (pulse-divider (in:kr root-trg-bus) div)))
-
-    (defsynth b32th_beat-cnt []
-      (out:kr b32th_beat-cnt-bus (pulse-count (in:kr b32th_beat-trg-bus))))
-    )
-
-  (do
-    (def r-trg (root-trg master-rate-bus))
-    (def r-cnt (root-cnt [:after r-trg]))
-    (def b1st-trg (b1st_beat-trg [:after r-trg]))
-    (def b1st-cnt (b1st_beat-cnt [:after b1st-trg]))
-    (def b4th-trg (b4th_beat-trg [:after r-trg]))
-    (def b4th-cnt (b4th_beat-cnt [:after b4th-trg]))
-    (def b8th-trg (b8th_beat-trg [:after r-trg]))
-    (def b8th-cnt (b8th_beat-cnt [:after b8th-trg]))
-    (def b16th-trg (b16th_beat-trg [:after r-trg]))
-    (def b16th-cnt (b16th_beat-cnt [:after b16th-trg]))
-    (def b32th-trg (b32th_beat-trg [:after r-trg]))
-    (def b32th-cnt (b32th_beat-cnt [:after b32th-trg]))
-    (control-bus-set! master-rate-bus (* 1 1))
-    )
-  (do
-    (defonce main-g (group "main bus"))
-    (defonce early-g (group "early bus" :head main-g))
-    (defonce later-g (group "late bus" :after early-g)))
-
-
-  (do
-    (defonce mcbus1 (control-bus 11))
-    (defonce mcbus2 (control-bus 11))
-    (defonce mcbus3 (control-bus 11))
-    )
-
-  (do
-    (defonce buffer-64-1 (buffer 64))
-    (defonce buffer-64-2 (buffer 64 11))
-    )
-
-  (do (defonce cbus1 (control-bus 1)))
-
-  (do (defonce vcbus1 (control-bus 1))
-      (defonce vcbus2 (control-bus 1))
-      (defonce vcbus3 (control-bus 1))
-      (defonce vcbus4 (control-bus 1))
-      )
-
-
-  (do (defonce pointLength 11))
-  )
-
-
-(def cb1 (control-bus))
-
-(def cb2 (control-bus))
-
-(defsynth tst [trig-in 0 counter-in 0 dur-buffer-in 0 out-bus 0 cntrl-bus 0 b 4] (let [trg-in       (in:kr trig-in)
-                                                                                         ;   cntr-in      (in:kr counter-in)
-                                        ;trg (demand:kr (in:kr trg-in) 0 (dbufrd dur-buffer-in cntr-in) )
-                                                                                            trg (t-duty:kr (dbufrd 175 (dseries 0 1 b) 0) trg-in)
-                                                                                            env (env-gen (perc 0.01 0.01 1 0) :gate trg)
-                                                                                            ] (out:kr out-bus trg)
-                                                                                  (out 0 (* 1 env (sin-osc (* 1 200  ))))))
-
-(def bbbb (buffer 3))
-
 
 (defsynth triggerGenerator [base-trigger-bus-in 0
                            base-counter-bus-in 0
                            base-pattern-buffer-in 0
-                           base-pattern-size-buffer-in 0
                             trigger-bus-out 0
                             dbgbus 0]
   (let [base-trigger        (in:kr base-trigger-bus-in)
         base-counter        (in:kr base-counter-bus-in)
         pattern-buffer-id   (dbufrd base-pattern-buffer-in base-counter)
-        pattern-buffer-size (dbufrd base-pattern-size-buffer-in base-counter)
-        ;_ (println pattern-buffer-size)
-                                        ;_ (println pattern-buffer-id)
         pattern_item        (dbufrd pattern-buffer-id (dseries 0 1 INF) 0)
         trg                 (t-duty:kr (dbufrd pattern-buffer-id (dseries 0 1 INF) 0) base-trigger  pattern_item)]
     (out:kr trigger-bus-out trg)))
 
 
 (def b1 (buffer 9))
-(buffer-write! b1 [0 1/8 1/8 1/8 1/8 1/8 1/8 1/8 1/8])
+(buffer-write! b1 [0 1/8 1/80 1/8 1/80 1/8 1/80 1/8 1/80])
 (def b2 (buffer 5))
-(buffer-write! b2 [0 1/4 1/4 1/4 1/4])
+(buffer-write! b2 [0 1/80 1/40 1/80 1/40])
 (def b3 (buffer 3))
-(buffer-write! b3 [0 1/2 1/2])
+(buffer-write! b3 [0 1/80 1/80])
 (def b4 (buffer 4))
-(buffer-write! b4 [0 1/3 1/3 1/3])
+(buffer-write! b4 [0 1/60 1/60 1/60] )
 (def b5 (buffer 17))
-(buffer-write! b5 [0 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16])
+(buffer-write! b5 [0 1/160 1/160 1/160 1/160 1/160 1/160 1/160 1/160 1/160 1/160 1/160 1/160 1/160 1/160 1/160 1/160])
 
 
 (def bp (buffer 5))
@@ -214,55 +31,46 @@
 (def bps (buffer 5))
 (buffer-write! bps [5 3 4 17 9])
 (def tstbus (control-bus 1))
+
+
+(def tstbus2 (control-bus 1))
+
 (def debugbus (control-bus 1))
 
 (def tsttriggen (triggerGenerator base-trigger-bus
                                   base-trigger-count-bus
                                   bp
-                                  bps
                                   tstbus))
 
 (ctl tsttriggen :base-pattern-buffer-in bp :base-pattern-size-buffer-in bps)
 
 (kill tsttriggen)
 
-(vec (buffer-data bps))
 
-(kill 105)
-(buffer-id b1)
-
-(stop)
-
-(control-bus-get tstbus)
+(def tsttriggen2 (triggerGenerator base-trigger-bus
+                                  base-trigger-count-bus
+                                  bp
+                                  tstbus2))
 
 
-(defsynth tstsin [trig-in 0] (let [trg (in:kr trig-in)
+(defsynth tstsin [trig-in 0 f 200] (let [trg (in:kr trig-in)
                                    env (env-gen (perc 0.01 0.01 1 0) :gate trg)
-                                   src (* env (sin-osc 200))]
+                                   src (* env (sin-osc f))]
                                (out 0 src)))
 
 
+(pp-node-tree)
 
+(buffer-id b5)
+(buffer-free b5)
 
 (def tstsin1 (tstsin tstbus))
 
-(kill tstsin1)
 
-(index (buffer-id bbbb) 30)
+(def tstsin2 (tstsin tstbus2 1260))
 
-(buffer-size b2)
+(stop)
 
-(odoc index)
-
-(odoc t-duty)
-
-(odoc trig)
-
-(odoc dbufrd)
-
-(odoc dseries)
-
-(odoc buffer-data)
 
 
                                         ;Clojure patterning functions and trigger synths
@@ -371,69 +179,13 @@
                                                   ))
 
 
+ )
 
 
 
-
-  (event-monitor-off)
-
-
-  (reduce + (generateDurations [1 1 1 [1 1 1 1]])))
-
+(stop)
 
 (def bub (set-buffer2 ttt bub (generateDurations [[1 1] 1 1 1]) ))
-
-(buffer-id bub)
-
-(repeat 10 1)
-
-(concat [1 2 3] [1 2 3] [1 2 3])
-
-
-(do
-  (kill ttt)
-  (def ttt (tst base-trigger-bus b32th_beat-cnt-bus bub cb1 0))
-
-  )
-
-(= overtone.sc.synth.Synth (type tst))
-
-(buffer-id bub)
-
-
-(ctl ttt :b 4)
-
-(control-bus-get cb1)
-
-(control-bus-set! cb2 3)
-
-(pp-node-tree)
-
-(kill 73)
-
-(kill ttt)
-
-(kill ttt2)
-
-
-(subvec [1 2 3] 4)
-
-(defsynth ts [] (out 0 (sin-osc 100)))
-
-(def tss (ts))
-
-(kill tss)
-
-(odoc buf-rd)
-
-(buffer-write! buffer-64-1 [ 4 4 4 4 4 4 4 4
-                             4 4 4 4 4 4 4 4
-                             4 4 4 4 4 4 4 4
-                             3 3 3 3 3 3 3 3
-                             2 2 2 2 2 2 2 2
-                             2 2 2 2 2 2 2 2
-                             2 2 2 2 2 2 2 2
-                             2 2 2 2 2 2 2 2])
 
 
                                         ; single pulse point
@@ -459,41 +211,6 @@
 
   )
 
-
-(def playBuffer (buffer 128))
-(buffer-write! playBuffer [1 1 1 0 0 0 0 0
-                           4 0 0 0 0 0 0 0
-                           4 0 0 0 0 0 0 0
-                           4 0 0 0 0 0 0 0
-                           4 0 0 0 0 0 0 0
-                           4 0 0 0 0 0 0 0
-                           3 0 0 0 0 0 0 0
-                           3 0 0 0 0 0 0 0
-                           2 0 0 0 0 0 0 0
-                           2 0 0 0 0 0 0 0
-                           2 0 0 0 0 0 0 0
-                           2 0 0 0 0 0 0 0
-                           2 0 0 0 0 0 0 0
-                           2 0 0 0 0 0 0 0
-                           2 0 0 0 0 0 0 0
-                           4 0 0 0 0 0 0 0])
-
-(buffer-write! playBuffer barb)
-
-(def bbb (buffer 8))
-(buffer-write! bbb [1 0 0 0 0 0 0 1])
-
-                                        ;buffer modifiers
-
-(def modValArray (writeBuffer pointBuffer  (setChords modValArray :E#2 :minor 1)))
-
-(def modValArray (writeBuffer pointBuffer (setADSR modValArray 0.01 0.3 0.99 0.1 4)))
-
-(def modValArray (writeBuffer pointBuffer (setAmp modValArray 1 3)))
-
-(def modValArray (writeBuffer pointBuffer (setPoint modValArray [1 200 334 455 576 0.01 0.3 0.99 0.01 1] 3)))
-
-                                        ;readers
 
 (defsynth playReader [play-buf 0
                       point-buf 0
