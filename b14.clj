@@ -180,12 +180,83 @@
 (def bbbb (buffer 3))
 
 
+(defsynth triggerGenerator [base-trigger-bus-in 0
+                           base-counter-bus-in 0
+                           base-pattern-buffer-in 0
+                           base-pattern-size-buffer-in 0
+                            trigger-bus-out 0
+                            dbgbus 0]
+  (let [base-trigger        (in:kr base-trigger-bus-in)
+        base-counter        (in:kr base-counter-bus-in)
+        pattern-buffer-id   (dbufrd base-pattern-buffer-in base-counter)
+        pattern-buffer-size (dbufrd base-pattern-size-buffer-in base-counter)
+        ;_ (println pattern-buffer-size)
+                                        ;_ (println pattern-buffer-id)
+        pattern_item        (dbufrd pattern-buffer-id (dseries 0 1 INF) 0)
+        trg                 (t-duty:kr (dbufrd pattern-buffer-id (dseries 0 1 INF) 0) base-trigger  pattern_item)]
+    (out:kr trigger-bus-out trg)))
+
+
+(def b1 (buffer 9))
+(buffer-write! b1 [0 1/8 1/8 1/8 1/8 1/8 1/8 1/8 1/8])
+(def b2 (buffer 5))
+(buffer-write! b2 [0 1/4 1/4 1/4 1/4])
+(def b3 (buffer 3))
+(buffer-write! b3 [0 1/2 1/2])
+(def b4 (buffer 4))
+(buffer-write! b4 [0 1/3 1/3 1/3])
+(def b5 (buffer 17))
+(buffer-write! b5 [0 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16])
+
+
+(def bp (buffer 5))
+(buffer-write! bp [(buffer-id b1) (buffer-id b2) (buffer-id b3) (buffer-id b4) (buffer-id b5)])
+(def bps (buffer 5))
+(buffer-write! bps [5 3 4 17 9])
+(def tstbus (control-bus 1))
+(def debugbus (control-bus 1))
+
+(def tsttriggen (triggerGenerator base-trigger-bus
+                                  base-trigger-count-bus
+                                  bp
+                                  bps
+                                  tstbus))
+
+(ctl tsttriggen :base-pattern-buffer-in bp :base-pattern-size-buffer-in bps)
+
+(kill tsttriggen)
+
+(vec (buffer-data bps))
+
+(kill 105)
+(buffer-id b1)
+
+(stop)
+
+(control-bus-get tstbus)
+
+
+(defsynth tstsin [trig-in 0] (let [trg (in:kr trig-in)
+                                   env (env-gen (perc 0.01 0.01 1 0) :gate trg)
+                                   src (* env (sin-osc 200))]
+                               (out 0 src)))
+
+
+
+
+(def tstsin1 (tstsin tstbus))
+
+(kill tstsin1)
 
 (index (buffer-id bbbb) 30)
+
+(buffer-size b2)
 
 (odoc index)
 
 (odoc t-duty)
+
+(odoc trig)
 
 (odoc dbufrd)
 
@@ -193,26 +264,27 @@
 
 (odoc buffer-data)
 
+
                                         ;Clojure patterning functions and trigger synths
 (do
   (do
-    (defsynth baseTrigger [dur 1 out-bus 0] (out:kr out-bus (impulse:kr (in:kr dur))))
+    (defsynth baseTrigger [dur 1 out-bus 0] (out:kr out-bus (trig:kr (impulse:kr (in:kr dur)))))
+
     (def base-trigger-bus (control-bus 1))
+
     (def base-trigger-dur-bus (control-bus 1))
+
     (control-bus-set! base-trigger-dur-bus 1)
+
     (def base-trigger (baseTrigger base-trigger-dur-bus base-trigger-bus))
 
     (def base-trigger-count-bus (control-bus 1))
+
     (defsynth baseTriggerCounter [base-trigger-bus-in 0 base-trigger-count-bus-out 0]
       (out:kr base-trigger-count-bus-out (pulse-count:kr (in:kr base-trigger-bus-in))))
+
     (def base-trigger-count (baseTriggerCounter base-trigger-bus base-trigger-count-bus)))
 
-
-  (defn set-buffer [buf new-buf-data] (let [size (count (vec (buffer-data buf)))
-                                            clear-buf-data (into [] (repeat size 0))]
-                                        (buffer-write! buf clear-buf-data)
-                                        (buffer-write! buf new-buf-data)
-                                        ))
 
 
   (defn triggerDur [dur] (if (= dur 0) 0 1) )
