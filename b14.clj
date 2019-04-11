@@ -1,36 +1,25 @@
 (ns b14 (:use [overtone.live]) (:require [viritystone.tone :as t]) )
 
 
-(defsynth triggerGenerator [base-trigger-bus-in 0
-                           base-counter-bus-in 0
-                           base-pattern-buffer-in 0
-                            trigger-bus-out 0
-                            dbgbus 0]
-  (let [base-trigger        (in:kr base-trigger-bus-in)
-        base-counter        (in:kr base-counter-bus-in)
-        pattern-buffer-id   (dbufrd base-pattern-buffer-in base-counter)
-        pattern_item        (dbufrd pattern-buffer-id (dseries 0 1 INF) 0)
-        trg                 (t-duty:kr (dbufrd pattern-buffer-id (dseries 0 1 INF) 0) base-trigger  pattern_item)]
-    (out:kr trigger-bus-out trg)))
+
+(do
+  (def b1 (buffer 9))
+  (buffer-write! b1 [0 1/8 1/8 1/8 1/8 1/8 1/8 1/8 1/8])
+  (def b2 (buffer 5))
+  (buffer-write! b2 [0 1/4 1/4 1/4 1/4])
+  (def b3 (buffer 3))
+  (buffer-write! b3 [0 1/2 1/2])
+  (def b4 (buffer 4))
+  (buffer-write! b4 [0 1/3 1/3 1/3] )
+  (def b5 (buffer 17))
+  (buffer-write! b5 [0 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16 1/16])
 
 
-(def b1 (buffer 9))
-(buffer-write! b1 [0 1/8 1/80 1/8 1/80 1/8 1/80 1/8 1/80])
-(def b2 (buffer 5))
-(buffer-write! b2 [0 1/80 1/40 1/80 1/40])
-(def b3 (buffer 3))
-(buffer-write! b3 [0 1/80 1/80])
-(def b4 (buffer 4))
-(buffer-write! b4 [0 1/60 1/60 1/60] )
-(def b5 (buffer 17))
-(buffer-write! b5 [0 1/160 1/160 1/160 1/160 1/160 1/160 1/160 1/160 1/160 1/160 1/160 1/160 1/160 1/160 1/160 1/160])
-
-
-(def bp (buffer 5))
-(buffer-write! bp [(buffer-id b1) (buffer-id b2) (buffer-id b3) (buffer-id b4) (buffer-id b5)])
-(def bps (buffer 5))
-(buffer-write! bps [5 3 4 17 9])
-(def tstbus (control-bus 1))
+  (def bp (buffer 5))
+  (buffer-write! bp [(buffer-id b1) (buffer-id b2) (buffer-id b3) (buffer-id b4) (buffer-id b5)])
+  (def bps (buffer 5))
+  (buffer-write! bps [5 3 4 17 9])
+  (def tstbus (control-bus 1)))
 
 
 (def tstbus2 (control-bus 1))
@@ -61,22 +50,112 @@
 
 (pp-node-tree)
 
+(kill 108)
 (buffer-id b5)
 (buffer-free b5)
 
-(def tstsin1 (tstsin tstbus))
+(def gg (group "tsti"))
 
+(def tstsin1 (tstsin [:tail gg] tstbus))
+
+(kill tstsin1)
 
 (def tstsin2 (tstsin tstbus2 1260))
+
+(ctl tstsin1 :f 244)
+
+(kill tstsin2)
 
 (stop)
 
 
+(:children ( nth  (node-tree-seq) 0))
+
+(doseq [x (node-tree-seq)] (println x))
+
+(node-get-controls tstsin1 :f)
+
+(to-id tstsin1)
+
+(defprotocol modder
+  (set-name [this val])
+  (get-name [this]))
+
+(deftype Door [^:volatile-mutable lname]
+  modder
+  (set-name [this val] (set! lname val))
+  (get-name [this] (. this lname)))
+
+
+(def opnb (Door. "kakka"))
+
+(get-name opnb)
+
+(defprotocol synth-control
+  (kill-synth [this])
+  (swap-synth [this synth-name])
+  (ctl-synth [this var value]))
+
+(deftype synthContainer [^:volatile-mutable synthname]
+  synth-control
+  (kill-synth [this] (kill (. this synthname)))
+  (swap-synth [this synth-name] (println "not implemented"))
+  (ctl-synth [this var value] (ctl (. this synthname) var value)))
+
+
+(def sctl (synthContainer. tstsin1))
+
+(kill-synth sctl)
+(ctl-synth sctl :f 210)
+
+(find-var 'kakka)
+
+(intern *ns* (symbol "aaa") 100)
+
+(resolve (symbol "bbb"))
+
+
+(defn trg [pattern-name synth-name pattern] (let [pattern-name-symbol  (symbol pattern-name)
+                                                  resolved-pattern     (resolve pattern-name-symbol)
+                                                  type-pattern-name    (if (some? resolved-pattern) (type (var-get resolved-pattern)) nil)
+                                                  synth-node-status    (if  (= overtone.sc.node.SynthNode type-pattern-name )
+                                                                         (node-live? (var-get resolved-pattern))
+                                                                         nil)      ]
+                                              (if  synth-node-status
+                                                (do (println "Synth exits"))
+                                                (do (println "Synth created") (intern *ns* (symbol pattern-name) (synth-name tstbus )) )  )))
+
+; (intern *ns* (symbol pattern-name) pattern-name)
+(trg "tstsin1" tstsin 0)
+
+(group "tstsinpattern")
+
+tstsin1
+
+(pp-node-tree)
+
+(idify tstsin1)
+
+(node-tree-matching-synth-ids "tst1")
+
+(node-live? tstsin1)
+
+(some? nil)
+
+(resolve tstsin1)
+
+(= (type tstsin1) overtone.sc.node.SynthNode)
+
+(node-live? (var-get (resolve (symbol "tstsin1"))))
+
+(resolve (symbol "aasasd"))
+
+(pp-node-tree)
 
                                         ;Clojure patterning functions and trigger synths
 (do
   (do
-    (defsynth baseTrigger [dur 1 out-bus 0] (out:kr out-bus (trig:kr (impulse:kr (in:kr dur)))))
+    (defsynth baseTrigger [dur 1 out-bus 0] (out:kr out-bus (trig:kr (impulse:kr (/ 1 (in:kr dur))))))
 
     (def base-trigger-bus (control-bus 1))
 
@@ -91,9 +170,19 @@
     (defsynth baseTriggerCounter [base-trigger-bus-in 0 base-trigger-count-bus-out 0]
       (out:kr base-trigger-count-bus-out (pulse-count:kr (in:kr base-trigger-bus-in))))
 
-    (def base-trigger-count (baseTriggerCounter base-trigger-bus base-trigger-count-bus)))
+    (def base-trigger-count (baseTriggerCounter base-trigger-bus base-trigger-count-bus))
 
 
+    (defsynth triggerGenerator [base-trigger-bus-in 0
+                                base-counter-bus-in 0
+                                base-pattern-buffer-in 0
+                                trigger-bus-out 0]
+      (let [base-trigger        (in:kr base-trigger-bus-in)
+            base-counter        (in:kr base-counter-bus-in)
+            pattern-buffer-id   (dbufrd base-pattern-buffer-in base-counter)
+            pattern_item        (dbufrd pattern-buffer-id (dseries 0 1 INF) 0)
+            trg                 (t-duty:kr  (dbufrd pattern-buffer-id (dseries 0 1 INF) 0)  base-trigger  pattern_item)]
+        (out:kr trigger-bus-out trg))))
 
   (defn triggerDur [dur] (if (= dur 0) 0 1) )
 
@@ -267,17 +356,16 @@
                 video-control-bus 0
                 outbus 0
                 bdur 0.5]
-  (let [control_in   (in:kr control-bus 10)
-        cntr_in      (in:kr cnt-bus)
-          gate  (select:kr 0 control_in)
-          gate  (* gate cntr_in)
+  (let [control_in   (in:kr control-bus)
+          gate  control_in ;(select:kr 0 control_in)
+          ;gate  (* gate cntr_in)
         trg  (trig gate bdur)
         ;trg (t-delay trg (* bdur (pink-noise:kr)) )
-          freq  (select:kr 1 control_in)
-          a     (select:kr 5 control_in)
-          d     (select:kr 6 control_in)
-          s     (select:kr 7 control_in)
-          r     (select:kr 8 control_in)
+          freq  100; (select:kr 1 control_in)
+          a     0.01 ;(select:kr 5 control_in)
+          d     0.01 ;(select:kr 6 control_in)
+          s     0.01 ;(select:kr 7 control_in)
+          r     0.01 ;(select:kr 8 control_in)
           pls   trg
           adj       (max 1 pls)
           co-env    (perc v1 d1 f1 c1)
@@ -297,17 +385,17 @@
 
 
 (do (kill k1)
-    (def k1 (kick :control-bus mcbus3 :amp 1 :video-control-bus vcbus3 :cnt-bus b1st_beat-trg-bus))
+    (def k1 (kick :control-bus tstbus))
 
     )
 
-(ctl k1 :amp 1 :control-bus mcbus3 :video-control-bus vcbus3
+(ctl k1 :amp 20
      :v1 0.01 :v2 0.01 :v3 0.01
      :d1 1 :d2 10 :d3 1
      :f1 50 :f2 5 :f3 40
      :c1 -20 :c2 -18 :c3 -18 :bdur 0.11111)
 
-(ctl k1 :amp 1 :control-bus mcbus3 :video-control-bus vcbus3
+(ctl k1 :amp 1
      :v1 0.01 :v2 0.001 :v3 0.001
      :d1 11 :d2 11 :d3 11
      :f1 50 :f2 5 :f3 40
@@ -325,13 +413,13 @@
 
 (defsynth overpad
   [control-bus 0 note 30 amp 0.5 outbus 0 ctrl-output 0]
-  (let [control_in   (in:kr control-bus 10)
-        gate  (select:kr 0 control_in)
+  (let [control_in   (in:kr control-bus)
+        gate  control_in
         freq  100 ;(select:kr 1 control_in)
-        a     0.1;(select:kr 5 control_in)
-        d     0.1;(select:kr 6 control_in)
-        s     0.1;(select:kr 7 control_in)
-        r     0.1;(select:kr 8 control_in)
+        a     0.015;(select:kr 5 control_in)
+        d     0.05;(select:kr 6 control_in)
+        s     0.05;(select:kr 7 control_in)
+        r     0.05;(select:kr 8 control_in)
         noise (pink-noise)
         env    (env-gen (adsr a d s r) :gate gate)
         f-env (+ freq (* 30 freq (env-gen (perc 0.012 (- r 0.1)))))
@@ -347,11 +435,11 @@
 
 
 (do (kill op)
-    (def op (overpad  [:tail early-g] :control-bus mcbus3 :ctrl-output vcbus2 :amp 0.1))
+    (def op (overpad  :control-bus tstbus :amp 0.))
 
     )
 
-(ctl op :amp 4.6)
+(ctl op :amp 40.6)
 
                                         ;Video
 (t/start "./b13.glsl" :width 1920 :height 1080 :cams [0 1] :videos ["../videos/tietoisku_1_fixed.mp4" "../videos/spede_fixed.mp4"  "../videos/vt2.mp4" "../videos/hapsiainen_fixed.mp4" "../videos/sormileikit.mp4"])
