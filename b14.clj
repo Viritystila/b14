@@ -2,94 +2,101 @@
 
 
 
-(-> {:pn "snare" :sn snare :in-trg ["[1 2 3 4 5 6 8 9 10 11 12 13 14 15 16]" "[-]" "[-]" "[-]"   "[[1 2 3 4] [1 2 3 4] [1 2 3 4] [1 2 3 4]]" "[-]" "[-]" "[-]"] :in-amp ["[2]"] } trg)
+(trg "snare" snare :in-trg [r] [r] [r]  [[1 2 3 4] [1 2 3 4] [1 2 3 4] [1 2 3 4]] [r] [r] [r] :in-amp [2])
 
-(-> {:pn "kick" :sn kick :in-trg ["[1 0.001]" "[-]" "[ 2 - 2 -]"] :in-f2 ["[80 60]"] :in-amp ["[0.01]"] } trg)
+(trg "kick" kick :in-trg [1 [(repeat 4 1)]] [r] [2 r 2 [1 1]] :in-f2 [80 60] :in-amp [0.02])
 
-(-> {:pn "tb303" :sn tb303 :in-trg ["[1  [1 [1 [1 [1 1]]]]]" "[1 1 1 1 1 1 1 [1 1 1 1]]" "[1 1 1 1 1 1 1 1]" "[1 1 1 1]"] :in-amp ["[0.58]"] :in-note ["[22]" "[20]" "[20]"]  :in-gate-select ["[1]" "[0]"] :in-attack ["[0.0001]"] :in-decay ["[0.9]"] :in-sustain ["[0.5]"] :in-release ["[0.3]"] :in-r ["[0.9]"] :in-cutoff ["[2500 2500]" "[2000 1000]" "[1000 900 800 700 600 500 400 300 200 100]"] :in-wave ["[1]"]} trg )
+(trg "tb303" tb303 :in-trg [1 1 1 1] [(repeat 8 1)] :in-amp [1] :in-note [22] [20] [20]  :in-gate-select [0] [1] :in-attack [0.001] :in-decay [0.9] :in-sustain [0.5] :in-release [0.3] :in-r [0.9] :in-cutoff [2500 2000] [2000] :in-wave [1])
 
-(-> {:pn "super"  :sn  supersaw :in-freq ["[50 51 52 53 54 55 56 57 58 ]"] :in-amp ["[0.123]"]} trg)
+(trg "super"  supersaw :in-freq [(range 50 66 1)] [66] [66] [(range 66 50 -1)] [50] [50] :in-amp [0.8223])
 
-(stp "tb303")
+(stp :tb303)
 
-(stp "kick")
+(stp :kick)
 
-(stp  "snare")
+(stp  :snare)
 
-(stp "super")
+(stp :super)
 
-(stp "flute")
+(stp :flute)
 
-(stp "lead")
+(stp :lead)
 
-(stp "lead2")
+(stp :lead2)
 
-(-> {:pn "kick" :sn kick :in-trg ["[1  [2 [3 4 5 [6 [7 8 9  10]]]]]" "[1 2]"  "[1 2]"  "[1 2]" "[1 2 3 4]" "[1 2]" "[1 2]" "[1 2]"  ] :in-f1 ["[100 200 300 400 500]" "[100 200]"] :in-amp ["[0.03]"]:in-f2 ["[80 60]"] } trg)
+(trg "kick" kick :in-trg [1 [2 [3 4 5 [6 [7 8 9 10]]]]] (repeat 3 [1 2]) [1 2 3 4]  (repeat 3 [1 2])  :in-f1 [(range 100 500 100)] [100 200] :in-amp [0.03]:in-f2 [80 60] )
 
-
-(-> {:pn "kick" :sn kick :in-trg ["[1  [2 [3 4 5 [6 [7 8 9 10]]]]]" "[10 11 12 13 41 15 16 17 18 1 1 1 1 1 1 1  1 1 1 1]" ] :in-f1 ["[100 200 300 400 500]"] :in-amp ["[0.02]"] } trg)
-
-
-(-> {:pn "snare" :sn snare :in-trg ["[1 1 5 - 1]"] :in-amp ["[1]"] } trg)
-
-(-> {:pn "mooger" :sn mooger :in-trg ["[1]"] :in-amp ["[1]"] :in-note ["[60]" "[59]" "[61]" "[62 61 59 58]" "[60 [59 62]]" "[61]" "[62]" "[61]" ]} trg)
-
-(stp "mooger")
+(trg "kick" kick :in-trg [[1 [2 [3 4 5 [6 [7 8 9]]]]] ] [(range 10 18 1) (repeat 8 1)] :in-f1 [300] :in-amp [0.02] )
 
 
-(-> {:pn "mooger2"
-     :sn mooger
-     :in-trg ["[1 1 1 1]" "[1]" "[1]"]
-     :in-amp ["[3]"]
-     :in-note ["[30 31 32 30]" "[30 40 35 40]" "[30 40 30 40]" "[40]" "[30]"]
-     :in-gate-select ["[1]"]
-     :in-osc1 ["[1 1 0 0]"]
-     :in-osc2 ["[2 2 1 1]"]
-     :in-attack ["[0.0021]"]
-     :in-decay ["[0.95]"]
-     :in-sustain ["[0.4]"]
-     :in-release ["[0.03]"]
-     :in-cutoff  ["[1000 800 600 400 300 200 100 200 300 400 500 600 700 800 900]"]
-     :in-fattack ["[0.022]"]
-     :in-fdecay ["[0.9]"]
-     :in-fsustain ["[0.9]"]
-     :in-frelease ["[0.01]"]
-     :in-osc2-level ["[2]"]
-     :in-osc1-level ["[1]"]} trg)
+(trg "snare" snare :in-trg [1 1 5 r 1] :in-amp [1] )
 
+(trg  "mooger"  mooger :in-trg [1] :in-amp [1] :in-note [60] [59] [61] [62 61 59 58] [60 [59 62]] [61] [62] [61])
 
+(stp :mooger)
 
+(stp :mooger2)
 
-(-> {:pn "tb303" :sn tb303 :in-trg ["[1  [1 [1 [1 [1 [1 1]]]]]]" "[1 1 1 1 1 1 1 [1 1 1 1]]" "[1 1 1 1 1 1 1 1]" "[1 1 1 1]" "[1 1 1 1]"] :in-amp ["[1]"] :in-note ["[22]" "[20]" "[20]"]  :in-gate-select ["[1]" "[0]"] :in-attack ["[0.0001]"] :in-decay ["[0.9]"] :in-sustain ["[0.5]"] :in-release ["[0.3]"] :in-r ["[0.9]"] :in-cutoff ["[2500 2500]" "[2000 1000]" "[1000 900 800 700 600 500 400 300 200 100]"] :in-wave ["[1]"]} trg )
-
-
-(-> {:pn "tb3032" :sn tb303 :in-trg ["[1  [1 [1 [1 [1 1]]]]]" "[[[[[1 1] 1] 1] 1] 1]" "[1 1 1 1]"] :in-amp ["[1]"] :in-note ["[20]" "[21]"]  :in-gate-select ["[1]"] :in-attack ["[0.0001]"] :in-decay ["[0.9]"] :in-sustain ["[0.5]"] :in-release ["[0.23]"] :in-r ["[0.19]"] :in-cutoff ["[500 20000]" "[20000 1000]"] :in-wave ["[1]"]} trg )
+(trg "mooger2"
+    mooger
+    :in-trg [1 1 1 1] [1] [1]
+    :in-amp [3]
+    :in-note [30 31 32 30] [30 40 30 40] [40] [30]
+    :in-gate-select [1]
+    :in-osc1 [1 1 0 0]
+    :in-osc2 [2 2 1 1]
+    :in-attack [0.0021]
+    :in-decay [0.95]
+    :in-sustain [0.4]
+    :in-release [0.03]
+    :in-cutoff  [(range 1000 200 -200) (range 100 900 100)]
+    :in-fattack [0.022]
+    :in-fdecay [0.9]
+    :in-fsustain [0.9]
+    :in-frelease [0.01]
+    :in-osc2-level [2]
+    :in-osc1-level [1])
 
 
 
-(-> {:pn "kick" :sn kick :in-trg ["[- 1]" "[-]" "[1 1]" "[-]" "[1 [1 1 1 1]]"  "[-]"  "[1 1 [1 1] -]" ] :in-f3 ["[100]"] :in-amp ["[0.0001]"]:in-f2 ["[80 60]"] } trg)
+
+(trg "tb303"
+    tb303
+    :in-trg [ 1 [1 [1 [1 [1 [1 [1 1]]]]]]] [(repeat 8 1)]  [1 1 1 1]  [1 1 1 1]
+    :in-amp [1]
+    :in-note [22] [20] [20]
+    :in-gate-select [1] [0]
+    :in-attack [0.001]
+    :in-decay [0.9]
+    :in-sustain [0.5]
+    :in-release [0.3]
+    :in-r [0.9]
+    :in-cutoff [2500 2500] [2000 1000] [(range 1000 100 -100)]
+    :in-wave [1])
 
 
-(-> {:pn "kick" :sn kick :in-trg ["[1  [2 [3 4 5 [6 [7 8 9  10]]]]]" "[1 2]"  "[1 2]"  "[1 2]" "[1 2 3 4]" "[1 2]" "[1 2]" "[1 2]"  ] :in-f1 ["[100 200 300 400 500]" "[100 200]"] :in-amp ["[0.03]"]:in-f2 ["[80 60]"] } trg)
+
+(trg "kick"
+    kick
+    :in-trg [r 1] [r] [1 1] [r] [1 [1 1 1 1 ]] [r] [1 1 [1 1] r]
+    :in-f3 [100]
+    :in-amp [0.0001]
+    :in-f2 [80])
 
 
-(-> {:pn "kick3" :sn kick :in-trg ["[1  [2 [3 4 5 [6 [7 8 9 10]]]]]" "[10 11 12 13 41 15 16 17 18 1 1 1 1 1 1 1  1 1 1 1]" ] :in-f1 ["[90]"]
-     :in-amp ["[0.02]"]} trg)
+(trg "flute"
+    simple-flute
+    :in-trg [1 1 1 1]
+    :in-freq (repeat 8 [880]) (repeat 8 [800])
+    :in-gate-select (repeat 4 [0]) (repeat 4 [1])
+    :in-attack [0.001]
+    :in-decay  [0.91]
+    :in-sustain [0.75]
+    :in-release [ 0.09]
+    :in-amp [1.0]
+    :in-ctrl-select [1])
 
-;kick amp 0.02
-
-(-> {:pn "flute"
-     :sn simple-flute
-     :in-trg ["[1 1 1 1 ]"]
-     :in-freq ["[880]" "[880]" "[880]" "[880]" "[880]" "[880]" "[880]" "[880]" "[880]" "[800]" "[800]" "[800]" "[800]" "[800]" "[800]" "[800]" "[800]"]
-     :in-gate-select [ "[0]"  "[0]"  "[0]"  "[0]"  "[1]"  "[1]"  "[1]"  "[1]" ]
-     :in-attack ["[0.0001]"]
-     :in-decay  ["[0.91]"]
-     :in-sustain ["[0.75]"]
-     :in-release [ "[0.9]"]
-     :in-amp ["[0.27]"]
-     :in-ctrl-select ["[2]"]} trg)
-
+(stp :flute)
 
 
 (-> {:pn "flute2"
