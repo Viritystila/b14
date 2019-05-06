@@ -1,10 +1,9 @@
 (ns b14 (:use [trigger.trigger] [trigger.synths] [overtone.core]) (:require [viritystone.tone :as t]) )
 
 
-
 (trg "snare" snare :in-trg [r] [r] [r]  [[1 2 3 4] [1 2 3 4] [1 2 3 4] [1 2 3 4]] [r] [r] [r] :in-amp [2])
 
-(trg "kick" kick :in-trg [1 [(repeat 4 1)]] [r] [2 r 2 [1 1]] :in-f2 [80 60] :in-amp [0.02])
+(trg "kick" kick :in-trg  [1 r 1 r] [1 [(repeat 4 1)]] [r] [1 r 2 [1 1]] :in-f2 [80 60] :in-amp [0.01])
 
 (trg "tb303" tb303 :in-trg [1 1 1 1] [(repeat 8 1)] :in-amp [1] :in-note [22] [20] [20]  :in-gate-select [0] [1] :in-attack [0.001] :in-decay [0.9] :in-sustain [0.5] :in-release [0.3] :in-r [0.9] :in-cutoff [2500 2000] [2000] :in-wave [1])
 
@@ -20,6 +19,8 @@
 
 (stp :flute)
 
+(stp :flute2)
+
 (stp :lead)
 
 (stp :lead2)
@@ -27,6 +28,14 @@
 (trg "kick" kick :in-trg [1 [2 [3 4 5 [6 [7 8 9 10]]]]] (repeat 3 [1 2]) [1 2 3 4]  (repeat 3 [1 2])  :in-f1 [(range 100 500 100)] [100 200] :in-amp [0.03]:in-f2 [80 60] )
 
 (trg "kick" kick :in-trg [[1 [2 [3 4 5 [6 [7 8 9]]]]] ] [(range 10 18 1) (repeat 8 1)] :in-f1 [300] :in-amp [0.02] )
+
+(trg "kick"
+     kick
+     :in-trg [(repeat 8 1)] [1 1 1 1 1 1 1 [1 1]]
+     :in-f1 [(range 100 180 10)] [(range 180 100 -10)]
+     :in-f2 [100]
+     :in-f3 [20]
+     :in-amp [0.02] )
 
 
 (trg "snare" snare :in-trg [1 1 5 r 1] :in-amp [1] )
@@ -99,29 +108,29 @@
 (stp :flute)
 
 
-(-> {:pn "flute2"
-     :sn simple-flute
-     :in-trg ["[1 1 1 1]"]
-     :in-gate-select ["[0]"]
-     :in-freq ["[588]""[588]" "[588]" "[588]" "[588]" "[588]" "[588]" "[588]" "[1880]" "[1800]" "[1800]" "[1800]" "[1800]" "[1800]" "[1800]" "[1800]" "[1800]"]
-     :in-amp ["[0.9]"]} trg)
+(trg "flute2"
+    simple-flute
+    :in-trg [1 1 1 1]
+    :in-gate-select [0]
+    :in-freq (repeat 8 [588]) (repeat 8 [1800])
+    :in-amp [0.9])
 
 
-(-> {:pn "lead"
-     :sn cs80lead
-     :in-trg ["[1]"]
-     :in-freq ["[1880]""[1880]" "[1880]"  "[1880]" "[880]" "[880]" "[880]" "[880]" "[880]" "[880]" "[800]" "[800]" "[800]" "[800]" "[800]" "[800]" "[800]" "[800]" "[800]" "[800]"]
-     :in-vibrate ["[5]" "[6]" "[7]" "[8]" "[10]" "[14]" "[20]" "[25]" "[30]" "[14]" "[12]" "[10]" "[8]" "[5]" "[2]" "[1]" "[0]"]
-     :in-amp ["[0.19]"]}trg)
+(trg "lead"
+    cs80lead
+    :in-trg [1]
+    :in-freq (repeat 8 [1880]) (repeat 8 [800])
+    :in-vibrate [5] [6] [7] [8] [10] [12] [14] [20] [25] [30] [14] [12] [10] [8] [5] [2] [1] [0]
+    :in-amp [0.29])
 
 
-(-> {:pn "lead2"
-     :sn cs80lead
-     :in-trg ["[1]"]
-     :in-freq ["[440]""[440]" "[440]" "[440]" "[440]" "[440 880 440 880 440 880 440 880 440 880 440 880 440 880 440 880 440 880 440 880 440 880 440 880 440 880 440 880]" ]
-     :in-vibrate ["[15]" "[16]" "[17]" "[18]" "[19]" "[18]" "[17]" "[16]" "[15]" "[14]" "[10]" "[4]" "[0]" "[0]" "[0]" "[0]" "[0]"  "[19]" "[18]" "[17]" "[16]" "[15]" "[14]"]
-     :in-dtune  ["[0.2]" "[0.1]" "[0.01]"]
-     :in-amp ["[0.9]"]}trg)
+(trg "lead2"
+    cs80lead
+    :in-trg [1]
+    :in-freq (repeat 5 [440]) [(take 14 (cycle [440 880]))]
+    :in-vibrate [15] [16] [17] [18] [19] [18] [17] [16] [15] [14] [10] [4] (repeat 5 [0]) [19] [18] [17] [16] [15] [14]
+    :in-dtune [0.2] [0.1] [0.01]
+    :in-amp [0.39])
 
 (stp "lead2")
                                         ;Video
