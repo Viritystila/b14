@@ -1,13 +1,13 @@
 (ns b14 (:use [trigger.trigger] [trigger.synths] [overtone.core]) (:require [viritystone.tone :as t]) )
 
 
-(trg "snare" snare :in-trg [r] [r] [r]  [[1 2 3 4] [1 2 3 4] [1 2 3 4] [1 2 3 4]] [r] [r] [r] :in-amp [2])
+(trg :snare snare :in-trg [r] [r] [r]  [[1 2 3 4] [1 2 3 4] [1 2 3 4] [1 2 3 4]] [r] [r] [r] :in-amp [2])
 
-(trg "kick" kick :in-trg  [1 r 1 r] [1 [(repeat 4 1)]] [r] [1 r 2 [1 1]] :in-f2 [80 60] :in-amp [0.01])
+(trg :kick kick :in-trg  [1 r 1 r] [1 [(repeat 4 1)]] [r] [1 r 2 [1 1]] :in-f2 [80 60] :in-amp [0.01])
 
-(trg "tb303" tb303 :in-trg [1 1 1 1] [(repeat 8 1)] :in-amp [1] :in-note [22] [20] [20]  :in-gate-select [0] [1] :in-attack [0.001] :in-decay [0.9] :in-sustain [0.5] :in-release [0.3] :in-r [0.9] :in-cutoff [2500 2000] [2000] :in-wave [1])
+(trg :tb303 tb303 :in-trg [1 1 1 1] [(repeat 8 1)] :in-amp [0.4] :in-note [22] [20] [20]  :in-gate-select [0] [1] :in-attack [0.001] :in-decay [0.9] :in-sustain [0.5] :in-release [0.3] :in-r [0.9] :in-cutoff [2500 2000] [2000] :in-wave [1])
 
-(trg "super"  supersaw :in-freq [(range 50 66 1)] [66] [66] [(range 66 50 -1)] [50] [50] :in-amp [0.8223])
+(trg :super   supersaw :in-freq [(range 50 66 1)] [66] [66] [(range 66 50 -1)] [50] [50] :in-amp [0.38223])
 
 (stp :tb303)
 
@@ -25,11 +25,11 @@
 
 (stp :lead2)
 
-(trg "kick" kick :in-trg [1 [2 [3 4 5 [6 [7 8 9 10]]]]] (repeat 3 [1 2]) [1 2 3 4]  (repeat 3 [1 2])  :in-f1 [(range 100 500 100)] [100 200] :in-amp [0.03]:in-f2 [80 60] )
+(trg :kick kick :in-trg [1 [2 [3 4 5 [6 [7 8 9 10]]]]] (repeat 3 [1 2]) [1 2 3 4]  (repeat 3 [1 2])  :in-f1 [(range 100 500 100)] [100 200] :in-amp [0.03]:in-f2 [80 60] )
 
-(trg "kick" kick :in-trg [[1 [2 [3 4 5 [6 [7 8 9]]]]] ] [(range 10 18 1) (repeat 8 1)] :in-f1 [300] :in-amp [0.02] )
+(trg :kick kick :in-trg [[1 [2 [3 4 5 [6 [7 8 9]]]]] ] [(range 10 18 1) (repeat 8 1)] :in-f1 [300] :in-f2 [100] :in-f3 [100]  :in-amp [0.02] )
 
-(trg "kick"
+(trg :kick
      kick
      :in-trg [(repeat 8 1)] [1 1 1 1 1 1 1 [1 1]]
      :in-f1 [(range 100 180 10)] [(range 180 100 -10)]
@@ -38,15 +38,15 @@
      :in-amp [0.02] )
 
 
-(trg "snare" snare :in-trg [1 1 5 r 1] :in-amp [1] )
+(trg :snare snare :in-trg [1 1 5 r 1] :in-amp [1] )
 
-(trg  "mooger"  mooger :in-trg [1] :in-amp [1] :in-note [60] [59] [61] [62 61 59 58] [60 [59 62]] [61] [62] [61])
+(trg  :mooger  mooger :in-trg [1] :in-amp [1] :in-note [60] [59] [61] [62 61 59 58] [60 [59 62]] [61] [62] [61])
 
 (stp :mooger)
 
 (stp :mooger2)
 
-(trg "mooger2"
+(trg :mooger
     mooger
     :in-trg [1 1 1 1] [1] [1]
     :in-amp [3]
@@ -69,7 +69,7 @@
 
 
 
-(trg "tb303"
+(trg :tb303
     tb303
     :in-trg [ 1 [1 [1 [1 [1 [1 [1 1]]]]]]] [(repeat 8 1)]  [1 1 1 1]  [1 1 1 1]
     :in-amp [1]
@@ -85,7 +85,7 @@
 
 
 
-(trg "kick"
+(trg :kick
     kick
     :in-trg [r 1] [r] [1 1] [r] [1 [1 1 1 1 ]] [r] [1 1 [1 1] r]
     :in-f3 [100]
@@ -93,7 +93,7 @@
     :in-f2 [80])
 
 
-(trg "flute"
+(trg :flute
     simple-flute
     :in-trg [1 1 1 1]
     :in-freq (repeat 8 [880]) (repeat 8 [800])
@@ -108,7 +108,7 @@
 (stp :flute)
 
 
-(trg "flute2"
+(trg :flute
     simple-flute
     :in-trg [1 1 1 1]
     :in-gate-select [0]
@@ -116,7 +116,7 @@
     :in-amp [0.9])
 
 
-(trg "lead"
+(trg :lead
     cs80lead
     :in-trg [1]
     :in-freq (repeat 8 [1880]) (repeat 8 [800])
@@ -124,7 +124,7 @@
     :in-amp [0.29])
 
 
-(trg "lead2"
+(trg :lead2
     cs80lead
     :in-trg [1]
     :in-freq (repeat 5 [440]) [(take 14 (cycle [440 880]))]
@@ -132,11 +132,48 @@
     :in-dtune [0.2] [0.1] [0.01]
     :in-amp [0.39])
 
-(stp "lead2")
+(stp :lead2)
+
+
+(trg :bow
+     bowed
+     :in-trg [1] [1 r 1 1] [1]
+     :in-amp [0.2]
+     :in-note [(chord-degree :i :c1 :ionian)] [(note :c1)] [(note :d2)] [(note :e1)]
+     :in-velocity [50]
+     :in-gate-select [0]
+     :in-bow-offset [0.01]
+     :in-bow-position [1.75]
+     :in-bow-slope [0.8]
+     :in-vib-freq [6.127]
+     :in-vib-gain [1.19] )
+
+(trg :ks1
+     ks1
+     :in-trg [1 1 1 1] [[1 1] r r [1 1]] [r] [1 r [1 [1 1]] 1]
+     :in-dur [4.1]
+     :in-amp [1]
+     :in-note [(chord-degree :i :d4 :ionian)]
+     :in-decay [30.1]
+     :in-coef [(range 0.01 0.6 0.01)]  )
+
+
+(trg :vb
+     vintage-bass
+     :in-trg [ 1 1 1 1] [1 [1 1]] [1 ] [1 1 1  1]
+     :in-gate-select [1]
+     :in-amp [2]
+     :in-note [(chord-degree :i :d4 :ionian)]  (repeat 3 [(note :d4)])
+     :in-a [0.01])
+
+(stp :bow)
+
                                         ;Video
 (t/start "./b14.glsl" :width 1920 :height 1080 :cams [0 1] :videos ["../videos/tietoisku_1_fixed.mp4" "../videos/spede_fixed.mp4"  "../videos/vt2.mp4" "../videos/hapsiainen_fixed.mp4" "../videos/sormileikit.mp4"])
 
 (lss)
+
+
 
 ;(defonce beat-cnt-bus-atom_1 (bus-monitor b1st_beat-cnt-bus))
 
