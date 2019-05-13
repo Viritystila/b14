@@ -1,13 +1,44 @@
 (ns b14 (:use [trigger.trigger] [trigger.synths] [overtone.core]) (:require [viritystone.tone :as t]) )
 
 
-(trg :snare snare :in-trg [r] [r] [r]  [[1 2 3 4] [1 2 3 4] [1 2 3 4] [1 2 3 4]] [r] [r] [r] :in-amp [2])
+(lss)
 
-(trg :kick kick :in-trg  [1 r 1 r] [1 [(repeat 4 1)]] [r] [1 r 2 [1 1]] :in-f2 [80 60] :in-amp [0.01])
+(trg :snare snare :in-trg [(repeat 16 1)] :in-amp [4])
+
+
+(trg :snare3 snare2 :in-trg (repeat 2 [r 1 r 1]) (shuffle (vec (flatten (take 4 (repeat 64 [1 r ])))))   [r 1 r [1 1]] :in-amp [1])
+
+(stp :snare3)
+
+(trg :kick kick :in-trg  [1 r 1 r] [1 1 1 [(repeat 4 1)]] [r] [1 r 2 [1 1]] :in-f2 [80 60] :in-amp [0.01])
+
+
+(trg :kick kick2 :in-trg  (repeat 3 [r])  (shuffle (vec (flatten (take 4 (repeat 64 [1 r])))))  (repeat 4 [(repeat 8 1)]) :in-amp [0.08])
+
+(stp :snare3)
+
+
+(ctl base-trigger :del 0.9)
+
+(trg :kick
+     kick
+     :in-trg
+     [1 r [1 1] r]
+     [r 1 r 1]
+     [1 1 1 1]
+     [r [1 1] r [1 1 1 1]]
+     :in-f1 [190]
+     :in-f2 [80 60]
+     :in-f3 [90] [100] [110] [110]
+     :in-amp [0.01])
+
+
+(trg :kick kick :in-trg (shuffle (range 0 200 1)) [(range 200 0 -50)] [10 20 30 [50 60]] :in-f2 [80 60] :in-amp [0.01])
 
 (trg :tb303 tb303 :in-trg [1 1 1 1] [(repeat 8 1)] :in-amp [0.4] :in-note [22] [20] [20]  :in-gate-select [0] [1] :in-attack [0.001] :in-decay [0.9] :in-sustain [0.5] :in-release [0.3] :in-r [0.9] :in-cutoff [2500 2000] [2000] :in-wave [1])
 
-(trg :super   supersaw :in-freq [(range 50 66 1)] [66] [66] [(range 66 50 -1)] [50] [50] :in-amp [0.38223])
+
+(trg :super supersaw :in-freq [(range 50 66 1)] [66] [66] [(range 66 50 -1)] [50] [50] :in-amp [0.38223])
 
 (stp :tb303)
 
@@ -25,22 +56,22 @@
 
 (stp :lead2)
 
-(trg :kick kick :in-trg [1 [2 [3 4 5 [6 [7 8 9 10]]]]] (repeat 3 [1 2]) [1 2 3 4]  (repeat 3 [1 2])  :in-f1 [(range 100 500 100)] [100 200] :in-amp [0.03]:in-f2 [80 60] )
+(trg :kick kick :in-trg [1 [2 [3 4 5 [6 [7 8]]]]] (repeat 3 [1 2]) [1 2 3 4]  (repeat 3 [1 2])  :in-f1 [(range 100 500 100)] [100 200] :in-amp [0.03]:in-f2 [80 60] )
 
-(trg :kick kick :in-trg [[1 [2 [3 4 5 [6 [7 8 9]]]]] ] [(range 10 18 1) (repeat 8 1)] :in-f1 [300] :in-f2 [100] :in-f3 [100]  :in-amp [0.02] )
+(trg :kick kick :in-trg [1 [2 [3 4 5 [6 [7 8]]]]]  [(range 10 16 1) (repeat 8 1)] :in-f1 [300] :in-f2 [100] :in-f3 [100]  :in-amp [0.02] )
 
 (trg :kick
      kick
-     :in-trg [(repeat 8 1)] [1 1 1 1 1 1 1 [1 1]]
+     :in-trg [(repeat 8 1)] [(repeat 3 r) [1 3] (repeat 3 r) ]
      :in-f1 [(range 100 180 10)] [(range 180 100 -10)]
      :in-f2 [100]
-     :in-f3 [20]
+     :in-f3 [90 90 90 200 220 100 100 100]
      :in-amp [0.02] )
 
 
 (trg :snare snare :in-trg [1 1 5 r 1] :in-amp [1] )
 
-(trg  :mooger  mooger :in-trg [1] :in-amp [1] :in-note [60] [59] [61] [62 61 59 58] [60 [59 62]] [61] [62] [61])
+(trg  :mooger  mooger :in-trg [1 1 1 1] [1 r 1 r]  :in-amp [1] :in-note [60] [59] [61])
 
 (stp :mooger)
 
@@ -153,30 +184,43 @@
      :in-trg [1 1 1 1] [[1 1] r r [1 1]] [r] [1 r [1 [1 1]] 1]
      :in-dur [4.1]
      :in-amp [1]
-     :in-note [(chord-degree :i :d4 :ionian)]
-     :in-decay [30.1]
+     :in-note (repeat 3 [(chord-degree :i :d4 :melodic-minor)])  [(chord-degree :i :d4 :melodic-major)]
+     :in-decay [10.1]
      :in-coef [(range 0.01 0.6 0.01)]  )
 
 
 (trg :vb
      vintage-bass
-     :in-trg [ 1 1 1 1] [1 [1 1]] [1 ] [1 1 1  1]
-     :in-gate-select [1]
+     :in-trg [ 1 1 1 1] [1 [(repeat 16 1)]] [1 ] [1 1 1  1]
+     :in-gate-select [1] [1 1 1 0]
      :in-amp [2]
-     :in-note [(chord-degree :i :d4 :ionian)]  (repeat 3 [(note :d4)])
-     :in-a [0.01])
+     :in-note [(chord-degree :i :d4 :ionian)]  (repeat 3 [(chord-degree :i :d4 :melodic-major)])
+     :in-a [0.01]
+     :in-d [1.3]
+     :in-s [0.3]
+     :in-r [2])
 
-(stp :bow)
+
+(chord-degree :i :d4 :ionian)
+
+(scale :c4 :minor)
+
+(stp :ks1)
+
+(time (buffer 10))
 
                                         ;Video
 (t/start "./b14.glsl" :width 1920 :height 1080 :cams [0 1] :videos ["../videos/tietoisku_1_fixed.mp4" "../videos/spede_fixed.mp4"  "../videos/vt2.mp4" "../videos/hapsiainen_fixed.mp4" "../videos/sormileikit.mp4"])
 
 (lss)
 
+(stop)
 
 
-;(defonce beat-cnt-bus-atom_1 (bus-monitor b1st_beat-cnt-bus))
 
+
+;;;;;;;;;
+;;;;;;;;
 
 
 (def ldf  (:trigger-value-bus (:in-freq (:triggers (:lead @synthConfig)))))
@@ -204,9 +248,16 @@
 
 (nth  (control-bus-get kickttrig5) 0)
 
-(on-trigger (get-trigger-val-id :kick :in-trg) (fn [val] (t/set-dataArray-item 0 val )) ::kick )
+(def timeAtom (atom 0))
 
-(on-trigger (get-trigger-val-id :tb303 :in-cutoff) (fn [val] (t/set-dataArray-item 1 val )) ::tb303 )
+(on-trigger 0 (fn [val] (println (- (System/currentTimeMillis) @timeAtom)) (reset! timeAtom (System/currentTimeMillis)) ) ::kick )
+
+(remove-event-handler ::kick
+ )
+
+(on-trigger (get-trigger-val-id :kick :in-trg) (fn [val] (t/set-dataArray-item 0 val)(t/set-fixed-buffer-index 1 :inc) ) ::kick )
+
+(on-trigger (get-trigger-val-id :snare :in-trg) (fn [val] (t/set-dataArray-item 1 val) (t/set-fixed-buffer-index 3 :dec)) ::snare )
 
 (def flm (control-bus-monitor (get-ctrl-bus :flute)))
 
@@ -239,16 +290,23 @@
 
 (t/set-dataArray-item 2 10)
 
-q(do
-                                        ;sepede 51000, 51700
-  (t/bufferSection 1 0 51700)
+(do
+                                        ;spede 51000, 51700
+  (t/bufferSection 1 0 51000)
 
-qq
-  (t/set-video-fixed 1 :fw)
+  (t/bufferSection 3 0 1)
+
+
+  (t/set-video-fixed 1 :static)
+
+
+  (t/set-video-fixed 3 :static)
+
 
   (t/set-video-fps 2 10)
 
   )
+(t/set-fixed-buffer-index 1 :ff 100)
 
 (t/toggle-recording "/dev/video1")
 
