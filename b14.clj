@@ -1,19 +1,56 @@
 (ns b14 (:use [trigger.trigger] [trigger.synths] [overtone.core]) (:require [viritystone.tone :as t]) )
 
+(require 'markov-chains.core)
+
+
+(def first-order-prob-matrix {
+  [:A4]  { :A4 0.1  :C#4 0.06  :Eb4 0.3 }
+  [:C#4] { :A4 0.925 :C#4 0.05 :Eb4 0.07 }
+  [:Eb4] { :A4 0.7  :C#4 0.03  :Eb4 0.9 }})
+
+(def second-order-prob-matrix {
+  [:A2 :A2] { :A2 0.18 :D2 0.6  :G2 0.22 }
+  [:A2 :D2] { :A2 0.5  :D2 0.5  :G2 0    }
+  [:A2 :G2] { :A2 0.15 :D2 0.75 :G2 0.1  }
+  [:D2 :D2] { :A2 0    :D2 0    :G2 1    }
+  [:D2 :A2] { :A2 0.25 :D2 0    :G2 0.75 }
+  [:D2 :G2] { :A2 0.9  :D2 0.1  :G2 0    }
+  [:G2 :G2] { :A2 0.4  :D2 0.4  :G2 0.2  }
+  [:G2 :A2] { :A2 0.5  :D2 0.25 :G2 0.25 }
+  [:G2 :D2] { :A2 0.21  :D2 0    :G2 0    }})
+
+
+(map (fn [x] [x] ) (map note (take 12 (markov-chains.core/generate second-order-prob-matrix))))
+
+                                        ;
+;(println "█████████▒███ ████████▓██▓░▒▒▒░  ░  ░░░░░░░ ░░░ ░   ░        ░░   ░░░  ░░  ")
 
 (lss)
 
-(trg :snare snare :in-trg [(repeat 16 1)] :in-amp [4])
+(trg :snare3 snare2 :in-trg  (seq (shuffle [[1] [1 1] [ 1 1 1] [ 1 1 1 1]])) :in-amp [1])
 
 
-(trg :snare3 snare2 :in-trg (repeat 2 [r 1 r 1]) (shuffle (vec (flatten (take 4 (repeat 64 [1 r ])))))   [r 1 r [1 1]] :in-amp [1])
+(trg :snare3 snare2 :in-trg (repeat 1 [r 1 r 1]) [r 1 r [1 1 1 1]] (shuffle (concat (repeat 4 r) (repeat 4 1)) )   [r 1 r [1 1]] :in-amp [1])
 
 (stp :snare3)
 
-(trg :kick kick :in-trg  [1 r 1 r] [1 1 1 [(repeat 4 1)]] [r] [1 r 2 [1 1]] :in-f2 [80 60] :in-amp [0.01])
+(trg :kick
+      kick3
+     :in-trg  [(repeat 4 1)]
+     :in-freq [(map midi->hz (map note (take 4 (markov-chains.core/generate first-order-prob-matrix))))] :in-amp [])
 
+
+(stp :kick)
 
 (trg :kick kick2 :in-trg  (repeat 3 [r])  (shuffle (vec (flatten (take 4 (repeat 64 [1 r])))))  (repeat 4 [(repeat 8 1)]) :in-amp [0.08])
+
+
+(trg :kick kick2 :in-trg  [1 [1 1] 1 1] [r]  (repeat 2 [(repeat 8 1)])
+     :in-freq [(midi->hz (note :g1))]
+     (repeat 1 [(midi->hz (note :g1))]) [(midi->hz (note :c2))] [(midi->hz (note :a1))]
+     :in-amp [0.08])
+
+
 
 (stp :snare3)
 
@@ -102,10 +139,10 @@
 
 (trg :tb303
     tb303
-    :in-trg [ 1 [1 [1 [1 [1 [1 [1 1]]]]]]] [(repeat 8 1)]  [1 1 1 1]  [1 1 1 1]
+    :in-trg [1 1 1 1] [(repeat 32 1)]
     :in-amp [1]
-    :in-note [22] [20] [20]
-    :in-gate-select [1] [0]
+    :in-note (map (fn [x] [x] ) (map note (take 2 (markov-chains.core/generate second-order-prob-matrix))))
+    :in-gate-select [1] [1 1 1 0]
     :in-attack [0.001]
     :in-decay [0.9]
     :in-sustain [0.5]

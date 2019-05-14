@@ -5,6 +5,7 @@
             :url "http://unlicense.org"}
     :dependencies [[org.clojure/clojure "1.9.0"]
                     [trigger "0.1.0-SNAPSHOT"]
-                    [org.viritystila/viritystone "0.0.1-SNAPSHOT"]]
+                    [org.viritystila/viritystone "0.0.1-SNAPSHOT"]
+                    [rm-hull/markov-chains "0.1.1"]]
                     
      :jvm-opts ^:replace [])
