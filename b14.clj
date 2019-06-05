@@ -8,6 +8,7 @@
   [:C#4] { :A4 0.925 :C#4 0.05 :Eb4 0.07 }
   [:Eb4] { :A4 0.7  :C#4 0.03  :Eb4 0.9 }})
 
+
 (def second-order-prob-matrix {
   [:A2 :A2] { :A2 0.18 :D2 0.6  :G2 0.22 }
   [:A2 :D2] { :A2 0.5  :D2 0.5  :G2 0    }
@@ -20,40 +21,36 @@
   [:G2 :D2] { :A2 0.21  :D2 0    :G2 0    }})
 
 
-(map (fn [x] [x] ) (map note (take 12 (markov-chains.core/generate second-order-prob-matrix))))
 
                                         ;
 ;(println "█████████▒███ ████████▓██▓░▒▒▒░  ░  ░░░░░░░ ░░░ ░   ░        ░░   ░░░  ░░  ")
 
 (lss)
 
-(trg :snare3 snare2 :in-trg  (seq (shuffle [[1] [1 1] [ 1 1 1] [ 1 1 1 1]])) :in-amp [1])
+(trg :snare3 snare2
+     :in-trg  (repeat 3 [r 1])  [[1 1] r 1 r 1 r 1 1]
+     :in-amp [0.3 0.5])
 
-
-(trg :snare3 snare2 :in-trg (repeat 1 [r 1 r 1]) [r 1 r [1 1 1 1]] (shuffle (concat (repeat 4 r) (repeat 4 1)) )   [r 1 r [1 1]] :in-amp [1])
 
 (stp :snare3)
 
 (trg :kick
-      kick3
-     :in-trg  [(repeat 4 1)]
-     :in-freq [(map midi->hz (map note (take 4 (markov-chains.core/generate first-order-prob-matrix))))] :in-amp [])
+      kick
+      :in-trg  (repeat 3 [(repeat 4 1)]) [[1 1] 1 1 1]
+     :in-f2 [(map midi->hz (map note (take 4 (markov-chains.core/generate first-order-prob-matrix))))] :in-amp [0.005])
 
 
 (stp :kick)
 
-(trg :kick kick2 :in-trg  (repeat 3 [r])  (shuffle (vec (flatten (take 4 (repeat 64 [1 r])))))  (repeat 4 [(repeat 8 1)]) :in-amp [0.08])
+(trg :kick2 trigger.synths/kick2 :in-trg  (repeat 3 [r])  (shuffle (vec (flatten (take 4 (repeat 64 [1 r])))))  (repeat 4 [(repeat 8 1)]) :in-amp [0.9])
 
 
-(trg :kick kick2 :in-trg  [1 [1 1] 1 1] [r]  (repeat 2 [(repeat 8 1)])
-     :in-freq [(midi->hz (note :g1))]
-     (repeat 1 [(midi->hz (note :g1))]) [(midi->hz (note :c2))] [(midi->hz (note :a1))]
-     :in-amp [0.08])
-
+(stp :kick2)
 
 
 (stp :snare3)
 
+(stop)
 
 (ctl base-trigger :del 0.9)
 
@@ -126,7 +123,7 @@
     :in-decay [0.95]
     :in-sustain [0.4]
     :in-release [0.03]
-    :in-cutoff  [(range 1000 200 -200) (range 100 900 100)]
+    :in-cutoff   (map vec (partition 4 (flatten [(range 1000 200 -200) (range 100 900 100)])))
     :in-fattack [0.022]
     :in-fdecay [0.9]
     :in-fsustain [0.9]
@@ -137,18 +134,19 @@
 
 
 
+
 (trg :tb303
     tb303
-    :in-trg [1 1 1 1] [(repeat 32 1)]
+    :in-trg (repeat 4 [1 1 1 1])
     :in-amp [1]
-    :in-note (map (fn [x] [x] ) (map note (take 2 (markov-chains.core/generate second-order-prob-matrix))))
-    :in-gate-select [1] [1 1 1 0]
+    :in-note (map (fn [x] [x] ) (map note (take 12 (markov-chains.core/generate second-order-prob-matrix))))
+    :in-gate-select [1]
     :in-attack [0.001]
     :in-decay [0.9]
     :in-sustain [0.5]
     :in-release [0.3]
-    :in-r [0.9]
-    :in-cutoff [2500 2500] [2000 1000] [(range 1000 100 -100)]
+    :in-r [0.09]
+    :in-cutoff [200]       ;[2500 2500] [2000 1000] [(range 1000 100 -100)]
     :in-wave [1])
 
 
@@ -157,7 +155,7 @@
     kick
     :in-trg [r 1] [r] [1 1] [r] [1 [1 1 1 1 ]] [r] [1 1 [1 1] r]
     :in-f3 [100]
-    :in-amp [0.0001]
+    :in-amp [0.1]
     :in-f2 [80])
 
 
@@ -205,16 +203,16 @@
 
 (trg :bow
      bowed
-     :in-trg [1] [1 r 1 1] [1]
-     :in-amp [0.2]
-     :in-note [(chord-degree :i :c1 :ionian)] [(note :c1)] [(note :d2)] [(note :e1)]
-     :in-velocity [50]
+     :in-trg (repeat 2  [r]) [1] [1 1 1 1]
+     :in-amp [0.3]
+     :in-note [(chord-degree :i :d4 :locrian)]
+     :in-velocity [10]
      :in-gate-select [0]
      :in-bow-offset [0.01]
-     :in-bow-position [1.75]
+     :in-bow-position [0.75]
      :in-bow-slope [0.8]
-     :in-vib-freq [6.127]
-     :in-vib-gain [1.19] )
+     :in-vib-freq [0.127]
+     :in-vib-gain [0.19] )
 
 (trg :ks1
      ks1
@@ -228,21 +226,21 @@
 
 (trg :vb
      vintage-bass
-     :in-trg [ 1 1 1 1] [1 [(repeat 16 1)]] [1 ] [1 1 1  1]
-     :in-gate-select [1] [1 1 1 0]
-     :in-amp [2]
-     :in-note [(chord-degree :i :d4 :ionian)]  (repeat 3 [(chord-degree :i :d4 :melodic-major)])
+     :in-trg [ 1 1 1 1] [(repeat 16 [1 r])] [r]  [r]
+     :in-gate-select [0] [1 1 1 0]
+     :in-amp [1]
+     :in-note  (vec (chord-degree :iii :d4 :locrian))  (repeat 3 [(chord-degree :i :d4 :melodic-major)])
      :in-a [0.01]
-     :in-d [1.3]
+     :in-d [5.3]
      :in-s [0.3]
-     :in-r [2])
+     :in-r [3])
 
 
 (chord-degree :i :d4 :ionian)
 
 (scale :c4 :minor)
 
-(stp :ks1)
+(stp :lead)
 
 (time (buffer 10))
 
