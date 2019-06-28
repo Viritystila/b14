@@ -22,27 +22,24 @@
 
 
 
-                                        ;
-;(println "█████████▒███ ████████▓██▓░▒▒▒░  ░  ░░░░░░░ ░░░ ░   ░        ░░   ░░░  ░░  ")
-
 (lss)
 
-(trg :snare3 snare2
-     :in-trg  (repeat 3 [r 1])  [[1 1] r 1 r 1 r 1 1]
-     :in-amp [0.3 0.5])
+(trg :snare snare
+     :in-trg   [[(repeat 8 1)] r] [[1 1] r] [[1 1] 1] [r]
+     :in-amp [0.2])
 
 
-(stp :snare3)
+(stp :snare)
 
 (trg :kick
       kick
-      :in-trg  (repeat 3 [(repeat 4 1)]) [[1 1] 1 1 1]
-     :in-f2 [(map midi->hz (map note (take 4 (markov-chains.core/generate first-order-prob-matrix))))] :in-amp [0.005])
+      :in-trg  [[1 1] r] [[1 1] r] [[1 1] 1] [r] ; [1 1 1 [(repeat 8 1)]] [[1 1] 1 1 [1 1 1 1] ]
+     :in-f2 [(map midi->hz (map note (take 4 (markov-chains.core/generate first-order-prob-matrix))))] :in-amp [0.001 0.004])
 
 
 (stp :kick)
 
-(trg :kick2 trigger.synths/kick2 :in-trg  (repeat 3 [r])  (shuffle (vec (flatten (take 4 (repeat 64 [1 r])))))  (repeat 4 [(repeat 8 1)]) :in-amp [0.9])
+(trg :kick2 trigger.synths/kick2 :in-trg  (repeat 3 [r])  (shuffle (vec (flatten (take 4 (repeat 64 [1 r])))))  (repeat 4 [(repeat 8 1)]) :in-amp [0.4])
 
 
 (stp :kick2)
@@ -67,12 +64,12 @@
      :in-amp [0.01])
 
 
-(trg :kick kick :in-trg (shuffle (range 0 200 1)) [(range 200 0 -50)] [10 20 30 [50 60]] :in-f2 [80 60] :in-amp [0.01])
+(trg :kick2  trigger.synths/kick2 :in-trg (shuffle (range 0 200 1)) [(range 200 0 -50)] [10 20 30 [50 60] 10 20 30 10] :in-amp [0.9])
 
-(trg :tb303 tb303 :in-trg [1 1 1 1] [(repeat 8 1)] :in-amp [0.4] :in-note [22] [20] [20]  :in-gate-select [0] [1] :in-attack [0.001] :in-decay [0.9] :in-sustain [0.5] :in-release [0.3] :in-r [0.9] :in-cutoff [2500 2000] [2000] :in-wave [1])
+(trg :tb303 tb303 :in-trg [1 1 1 1] [(repeat 8 1)] :in-amp [0.4] :in-note [(note :c1)] [(note :a1)] [(note :d1)]  :in-gate-select [1 0] [ 0 1] :in-attack [0.001] :in-decay [0.9] :in-sustain [0.5] :in-release [0.3] :in-r [0.9] :in-cutoff [2500 2000] [2000] :in-wave [1])
 
 
-(trg :super supersaw :in-freq [(range 50 66 1)] [66] [66] [(range 66 50 -1)] [50] [50] :in-amp [0.38223])
+(trg :super supersaw :in-freq [(range 50 66 1)] [66] [66] [(range 66 50 -1)] [50] [50] :in-amp [0.05])
 
 (stp :tb303)
 
@@ -90,6 +87,8 @@
 
 (stp :lead2)
 
+(stp :super)
+
 (trg :kick kick :in-trg [1 [2 [3 4 5 [6 [7 8]]]]] (repeat 3 [1 2]) [1 2 3 4]  (repeat 3 [1 2])  :in-f1 [(range 100 500 100)] [100 200] :in-amp [0.03]:in-f2 [80 60] )
 
 (trg :kick kick :in-trg [1 [2 [3 4 5 [6 [7 8]]]]]  [(range 10 16 1) (repeat 8 1)] :in-f1 [300] :in-f2 [100] :in-f3 [100]  :in-amp [0.02] )
@@ -105,17 +104,13 @@
 
 (trg :snare snare :in-trg [1 1 5 r 1] :in-amp [1] )
 
-(trg  :mooger  mooger :in-trg [1 1 1 1] [1 r 1 r]  :in-amp [1] :in-note [60] [59] [61])
-
-(stp :mooger)
-
-(stp :mooger2)
+(stp :snare)
 
 (trg :mooger
     mooger
     :in-trg [1 1 1 1] [1] [1]
-    :in-amp [3]
-    :in-note [30 31 32 30] [30 40 30 40] [40] [30]
+    :in-amp [0.3]
+    :in-note  (shuffle (chord :d2 :minor))
     :in-gate-select [1]
     :in-osc1 [1 1 0 0]
     :in-osc2 [2 2 1 1]
@@ -131,16 +126,17 @@
     :in-osc2-level [2]
     :in-osc1-level [1])
 
+(stp :mooger)
 
 
-
+(lss)
 
 (trg :tb303
     tb303
     :in-trg (repeat 4 [1 1 1 1])
-    :in-amp [1]
+    :in-amp [0.2]
     :in-note (map (fn [x] [x] ) (map note (take 12 (markov-chains.core/generate second-order-prob-matrix))))
-    :in-gate-select [1]
+    :in-gate-select [0]
     :in-attack [0.001]
     :in-decay [0.9]
     :in-sustain [0.5]
@@ -150,25 +146,26 @@
     :in-wave [1])
 
 
+(stp :tb303)
 
 (trg :kick
     kick
     :in-trg [r 1] [r] [1 1] [r] [1 [1 1 1 1 ]] [r] [1 1 [1 1] r]
     :in-f3 [100]
-    :in-amp [0.1]
+    :in-amp [0.01]
     :in-f2 [80])
 
 
 (trg :flute
     simple-flute
     :in-trg [1 1 1 1]
-    :in-freq (repeat 8 [880]) (repeat 8 [800])
-    :in-gate-select (repeat 4 [0]) (repeat 4 [1])
-    :in-attack [0.001]
+    :in-freq (repeat 8 [440]) (repeat 8 [800])
+    :in-gate-select (repeat 4 [0]) (repeat 4 [0])
+    :in-attack [0.01]
     :in-decay  [0.91]
     :in-sustain [0.75]
-    :in-release [ 0.09]
-    :in-amp [1.0]
+    :in-release [ 0.9]
+    :in-amp [0.3]
     :in-ctrl-select [1])
 
 (stp :flute)
@@ -185,9 +182,9 @@
 (trg :lead
     cs80lead
     :in-trg [1]
-    :in-freq (repeat 8 [1880]) (repeat 8 [800])
+    :in-freq (repeat 8 [(midi->hz (note :e6))]) (repeat 8 [(midi->hz (note :c6))])
     :in-vibrate [5] [6] [7] [8] [10] [12] [14] [20] [25] [30] [14] [12] [10] [8] [5] [2] [1] [0]
-    :in-amp [0.29])
+    :in-amp [0.15])
 
 
 (trg :lead2
@@ -198,54 +195,80 @@
     :in-dtune [0.2] [0.1] [0.01]
     :in-amp [0.39])
 
-(stp :lead2)
+(stp :lead)
 
 
 (trg :bow
      bowed
-     :in-trg (repeat 2  [r]) [1] [1 1 1 1]
-     :in-amp [0.3]
-     :in-note [(chord-degree :i :d4 :locrian)]
-     :in-velocity [10]
-     :in-gate-select [0]
+     :in-trg (repeat 2  [r]) (vec (repeat 1 (seq [1 1 1 [1 [1 1]] ]))) [[1 1] 1 1 1]
+     :in-amp [1] [1] [1] [1]
+     :in-note [(chord :d2 :major)] (shuffle (chord :g2 :minor))
+     :in-velocity [1]
+     :in-gate-select [1] [1] [1] [1 1]
      :in-bow-offset [0.01]
-     :in-bow-position [0.75]
-     :in-bow-slope [0.8]
+     :in-bow-position [1.75]
+     :in-bow-slope [0.08]
      :in-vib-freq [0.127]
      :in-vib-gain [0.19] )
 
+(stp :bow)
+
+(shuffle (chord :e3 :major))
+
 (trg :ks1
      ks1
-     :in-trg [1 1 1 1] [[1 1] r r [1 1]] [r] [1 r [1 [1 1]] 1]
-     :in-dur [4.1]
-     :in-amp [1]
-     :in-note (repeat 3 [(chord-degree :i :d4 :melodic-minor)])  [(chord-degree :i :d4 :melodic-major)]
-     :in-decay [10.1]
-     :in-coef [(range 0.01 0.6 0.01)]  )
+     :in-trg (repeat 3 [r]) [(repeat 32 1)]
+     :in-dur [3]
+     :in-amp [0.1]
+     :in-note (repeat 3 [(chord-degree :i :d4 :melodic-minor)])  [(chord-degree :i :d4 :melodic-major)]  (repeat 3 [(chord-degree :i :d4 :melodic-minor)])  [(shuffle (chord-degree :i :d4 :melodic-minor))]
+     :in-decay [0.1]
+     :in-coef [(range 0.01 0.9 0.01)]  )
 
+
+(stp :ks1)
 
 (trg :vb
      vintage-bass
-     :in-trg [ 1 1 1 1] [(repeat 16 [1 r])] [r]  [r]
-     :in-gate-select [0] [1 1 1 0]
-     :in-amp [1]
-     :in-note  (vec (chord-degree :iii :d4 :locrian))  (repeat 3 [(chord-degree :i :d4 :melodic-major)])
-     :in-a [0.01]
-     :in-d [5.3]
-     :in-s [0.3]
-     :in-r [3])
+     :in-trg [r 1] [r 1] [r] [1 1 1 [1 1 1 1]]
+     :in-gate-select [0] [0] [0] [1]
+     :in-amp [0.5]
+     :in-note  [(note :d2)]  [(note :d2)]
+     :in-a [0.001]
+     :in-d [0.3]
+     :in-s [0.7]
+     :in-r [0.8])
 
+(stp :vb)
+
+(trg :tom1
+     tom
+     :in-trg (map vec (partition 1 [1 1 1 [1 1 1 [1 1 1 [1 1 1 1]]]])) [r] [r] [[1 1 1 1] 1 1 1]
+     :in-stick-level [0.5]
+     :in-amp [0.3])
+
+(lss)
 
 (chord-degree :i :d4 :ionian)
 
 (scale :c4 :minor)
 
-(stp :lead)
+(stp :tom1)
 
-(time (buffer 10))
+(odoc crackle)
 
+(stop)
                                         ;Video
 (t/start "./b14.glsl" :width 1920 :height 1080 :cams [0 1] :videos ["../videos/tietoisku_1_fixed.mp4" "../videos/spede_fixed.mp4"  "../videos/vt2.mp4" "../videos/hapsiainen_fixed.mp4" "../videos/sormileikit.mp4"])
+
+
+                                        ;Video
+(t/start "./b14.glsl" :width 1920 :height 1080 :cams [0 1] :videos ["../videos/soviet1.mp4" "../videos/uni_fixed.mp4" "../videos/soviet2.mp4"])
+
+
+(t/post-start-video "../videos/spede_fixed.mp4" 3)
+
+(t/post-start-video "../videos/soviet4.mp4" 4)
+
 
 (lss)
 
@@ -253,9 +276,9 @@
 
 
 
-
-;;;;;;;;;
-;;;;;;;;
+;;;Algo tests
+;;;;;;;;;(vec (repeat 4 (seq [1 2 3 4])))
+;;;;;;;;(map vec (partition 2 [1 2 3 4]))
 
 
 (def ldf  (:trigger-value-bus (:in-freq (:triggers (:lead @synthConfig)))))
@@ -317,25 +340,37 @@
                      )
            )
 
+(t/set-video-frame 0 4000) ;Soviet1, bluscreen1
 
-(remove-watch ldm :trg)
-(control-bus-get kickttrig)
+(t/set-video-frame 0 16800) ;Soviet1, nuket
 
-@tbmnt9
+(t/set-video-frame 1 6460) ; Uni, pekkahäkki
 
-(t/set-dataArray-item 2 10)
 
 (do
                                         ;spede 51000, 51700
-  (t/bufferSection 1 0 51000)
+  (t/bufferSection 0 0 4000)
 
-  (t/bufferSection 3 0 1)
+  (t/bufferSection 1 0 6460)
+
+  (t/bufferSection 2 0 29460)
+
+  (t/bufferSection 3 0 51000)
+
+  (t/bufferSection 4 0 0)
 
 
-  (t/set-video-fixed 1 :static)
+  (t/set-video-fixed 0 :fw)
 
 
-  (t/set-video-fixed 3 :static)
+  (t/set-video-fixed 1 :fw)
+
+  (t/set-video-fixed 2 :fw)
+
+  (t/set-video-fixed 3 :fw)
+
+  (t/set-video-fixed 4 :fw)
+
 
 
   (t/set-video-fps 2 10)
